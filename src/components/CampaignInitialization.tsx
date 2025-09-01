@@ -93,7 +93,7 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
     }
   }, [campaign.startDate, campaign.endDate]);
 
-  const validateStep = (step: number): boolean => {
+  const validateStep = (step: number): Record<string, string> => {
     const newErrors: Record<string, string> = {};
 
     if (step >= 1) {
@@ -126,12 +126,13 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
       }
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return newErrors;
   };
 
   const handleNext = () => {
-    if (validateStep(currentStep)) {
+    const stepErrors = validateStep(currentStep);
+    setErrors(stepErrors);
+    if (Object.keys(stepErrors).length === 0) {
       setCurrentStep(prev => prev + 1);
     }
   };
@@ -141,7 +142,9 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
   };
 
   const handleComplete = () => {
-    if (validateStep(5)) {
+    const stepErrors = validateStep(5);
+    setErrors(stepErrors);
+    if (Object.keys(stepErrors).length === 0) {
       const completeCampaign: Campaign = {
         id: existingCampaign?.id || Math.random().toString(36).substr(2, 9),
         name: campaign.name!,
@@ -176,7 +179,8 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
   };
 
   const isStepComplete = (step: number): boolean => {
-    return validateStep(step);
+    const stepErrors = validateStep(step);
+    return Object.keys(stepErrors).length === 0;
   };
 
   const steps = [
