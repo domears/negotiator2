@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Edit3 } from 'lucide-react';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Dashboard } from './components/Dashboard';
 import { CampaignInitialization } from './components/CampaignInitialization';
