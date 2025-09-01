@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import { Campaign } from '../types/campaign';
 import { calculateScenarioMetrics } from '../utils/calculations';
-import { useFormatters, formatNumberFull, formatCurrencyFull } from '../utils/formatters';
+import { countCompact, countFull, usdCompact, usdFull, dollarsToCents } from '../utils/kpiFormat';
 
 export interface DashboardMetrics {
   activeCampaigns: number;
-  budget: number;
+  budgetCents: number;
   influencers: number;
   deliverables: number;
   loading: boolean;
@@ -28,7 +28,6 @@ export interface DashboardCard {
 }
 
 export const useDashboardMetrics = (campaigns: Campaign[]): DashboardMetrics => {
-
   const metrics = useMemo(() => {
     const now = new Date();
     
@@ -39,9 +38,9 @@ export const useDashboardMetrics = (campaigns: Campaign[]): DashboardMetrics => 
       return startDate <= now && endDate >= now;
     });
 
-    // Calculate total budget from active campaigns
-    const budget = activeCampaigns.reduce((sum, campaign) => {
-      return sum + campaign.budgetAmount;
+    // Calculate total budget from active campaigns (convert to cents)
+    const budgetCents = activeCampaigns.reduce((sum, campaign) => {
+      return sum + dollarsToCents(campaign.budgetAmount);
     }, 0);
 
     // Calculate total influencers from active campaigns
@@ -63,7 +62,7 @@ export const useDashboardMetrics = (campaigns: Campaign[]): DashboardMetrics => 
 
     return {
       activeCampaigns: activeCampaigns.length,
-      budget,
+      budgetCents,
       influencers,
       deliverables,
       loading: false,
@@ -82,50 +81,48 @@ export const useDashboardCards = (
   campaigns: Campaign[],
   onNavigate: (cardId: string) => void
 ): DashboardCard[] => {
-  const formatters = useFormatters();
   const metrics = useDashboardMetrics(campaigns);
 
   return useMemo(() => {
-
     return [
       {
         id: 'active-campaigns',
         title: 'Active Campaigns',
         value: metrics.activeCampaigns,
-        formattedValue: formatters.compact.format(metrics.activeCampaigns),
-        fullValue: formatNumberFull(metrics.activeCampaigns),
+        formattedValue: countCompact(metrics.activeCampaigns),
+        fullValue: countFull(metrics.activeCampaigns),
         icon: 'TrendingUp',
         color: 'text-green-600',
         bgColor: 'bg-green-100',
         available: true,
-        tooltip: `${formatNumberFull(metrics.activeCampaigns)} campaigns currently running`,
+        tooltip: `${countFull(metrics.activeCampaigns)} campaigns currently running`,
         onClick: () => onNavigate('active-campaigns'),
       },
       {
         id: 'budget',
         title: 'Budget',
-        value: metrics.budget,
-        formattedValue: formatters.currency.format(metrics.budget),
-        fullValue: formatCurrencyFull(metrics.budget),
+        value: metrics.budgetCents,
+        formattedValue: usdCompact(metrics.budgetCents),
+        fullValue: usdFull(metrics.budgetCents),
         icon: 'DollarSign',
         color: 'text-blue-600',
         bgColor: 'bg-blue-100',
         available: true,
-        tooltip: `Total budget: ${formatCurrencyFull(metrics.budget)} across active campaigns`,
+        tooltip: `Total budget: ${usdFull(metrics.budgetCents)} across active campaigns`,
         onClick: () => onNavigate('budget'),
       },
       {
         id: 'influencers',
         title: 'Influencers',
         value: metrics.influencers,
-        formattedValue: formatters.compact.format(metrics.influencers),
-        fullValue: formatNumberFull(metrics.influencers),
+        formattedValue: countCompact(metrics.influencers),
+        fullValue: countFull(metrics.influencers),
         icon: 'Users',
         color: 'text-purple-600',
         bgColor: 'bg-purple-100',
         available: metrics.influencers > 0,
         tooltip: metrics.influencers > 0 
-          ? `${formatNumberFull(metrics.influencers)} unique influencers in active campaigns`
+          ? `${countFull(metrics.influencers)} unique influencers in active campaigns`
           : 'Connect influencers to see this metric',
         onClick: () => onNavigate('influencers'),
       },
@@ -133,15 +130,15 @@ export const useDashboardCards = (
         id: 'deliverables',
         title: 'Deliverables',
         value: metrics.deliverables,
-        formattedValue: formatters.compact.format(metrics.deliverables),
-        fullValue: formatNumberFull(metrics.deliverables),
+        formattedValue: countCompact(metrics.deliverables),
+        fullValue: countFull(metrics.deliverables),
         icon: 'FileText',
         color: 'text-indigo-600',
         bgColor: 'bg-indigo-100',
         available: true,
-        tooltip: `${formatNumberFull(metrics.deliverables)} total deliverables across active campaigns`,
+        tooltip: `${countFull(metrics.deliverables)} total deliverables across active campaigns`,
         onClick: () => onNavigate('deliverables'),
       },
     ];
-  }, [metrics, formatters, onNavigate]);
+  }, [metrics, onNavigate]);
 };

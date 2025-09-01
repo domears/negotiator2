@@ -198,10 +198,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {dashboardCards.map((card) => (
+          {dashboardCards.map((metric) => (
             <DashboardCard
-              key={card.id}
-              metric={card}
+              key={metric.id}
+              metric={metric}
             />
           ))}
         </div>
