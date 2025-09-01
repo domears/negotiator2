@@ -190,7 +190,6 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
     { number: 2, title: 'Markets & Currency', icon: Globe },
     { number: 3, title: 'Objectives & KPIs', icon: Target },
     { number: 4, title: 'Goals & Targets', icon: BarChart3 },
-    { number: 4, title: 'Goals & Targets', icon: TrendingUp },
     { number: 5, title: 'Timing', icon: Clock },
     { number: 6, title: 'Budget', icon: DollarSign },
   ];
@@ -601,7 +600,7 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
                         <h4 className="font-medium text-accent-900 mb-3">Your Campaign Targets:</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {Object.entries(campaign.goals || {}).map(([kpi, value]) => (
-                            {getKpiDisplayValue(kpi, value, 'compact')}
+                            <div key={kpi} className="flex justify-between items-center">
                               <span className="text-sm text-accent-800">{kpi}:</span>
                               <span className="text-sm font-medium text-accent-900">
                                 {formatNumber(value, { 
@@ -842,6 +841,12 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Additional Notes (Optional)
+                      </label>
+                      <textarea
+                        value={campaign.auditNotes || ''}
+                        onChange={(e) => setCampaign(prev => ({ ...prev, auditNotes: e.target.value }))}
+                        placeholder="Any additional campaign context or requirements"
                         rows={3}
                         className="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500"
                       />
