@@ -135,7 +135,7 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
       if (newValue.length >= 4 && /^\d+$/.test(newValue)) {
         const parsedValue = parseSmartNumber(newValue);
         if (parsedValue >= 1000) {
-          const compactFormat = fmt.compact.format(parsedValue);
+          const compactFormat = formatters.compact.format(parsedValue);
           if (compactFormat !== newValue) {
             setGhostValue(compactFormat);
             setShowGhost(true);
