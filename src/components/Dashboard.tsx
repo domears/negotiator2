@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Plus, Search, Calendar, DollarSign, Users, Building2, Clock, Filter, ArrowRight, Folder, TrendingUp } from 'lucide-react';
+import { Plus, Search, Calendar, Users, Building2, Clock, Filter, ArrowRight, TrendingUp } from 'lucide-react';
 import { Campaign } from '../types/campaign';
 import { formatCurrency, calculateScenarioMetrics } from '../utils/calculations';
 import { useDashboardMetrics, useDashboardCards } from '../hooks/useDashboardMetrics';
 import { DashboardCard } from './DashboardCard';
-import { useFormatters } from '../hooks/useFormatters';
 
 interface DashboardProps {
   campaigns: Campaign[];
@@ -17,80 +16,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onCreateNew,
   onSelectCampaign,
 }) => {
-  const { compact, currency } = useFormatters();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'completed'>('all');
   const [sortBy, setSortBy] = useState<'name' | 'client' | 'createdAt' | 'budget'>('createdAt');
 
-  // Calculate dashboard metrics
-  const dashboardMetrics = React.useMemo((): DashboardMetric[] => {
-    const now = new Date();
-    const activeCampaigns = campaigns.filter(c => c.startDate <= now && c.endDate >= now);
-    
-    // Calculate total budget from active campaigns
-    const totalBudget = activeCampaigns.reduce((sum, c) => sum + c.budgetAmount, 0);
-    
-    // Calculate total influencers from active campaigns
-    // For now, estimate based on deliverables (in production, this would query actual influencer relationships)
-    const totalInfluencers = activeCampaigns.reduce((sum, c) => {
-      return sum + c.deliverables.reduce((deliverableSum, d) => {
-        if (d.creatorType === 'cohort' && d.cohortSize) {
-          return deliverableSum + d.cohortSize;
-        } else if (d.creatorType === 'specific') {
-          return deliverableSum + 1;
-        }
-        return deliverableSum + d.quantity; // For archetypes
-      }, 0);
-    }, 0);
-    
-    // Calculate total deliverables from active campaigns
-    const totalDeliverables = activeCampaigns.reduce((sum, c) => sum + c.deliverables.length, 0);
+  const metrics = useDashboardMetrics(campaigns);
+  const dashboardCards = useDashboardCards(metrics, handleCardClick);
 
-    return [
-      {
-        id: 'active-campaigns',
-        title: 'Active Campaigns',
-        value: activeCampaigns.length,
-        icon: TrendingUp,
-        color: 'text-green-600',
-        bgColor: 'bg-green-100',
-        available: true,
-        tooltip: 'Campaigns currently running'
-      },
-      {
-        id: 'budget',
-        title: 'Budget',
-        value: totalBudget,
-        icon: DollarSign,
-        color: 'text-blue-600',
-        bgColor: 'bg-blue-100',
-        available: true,
-        tooltip: 'Total budget across active campaigns'
-      },
-      {
-        id: 'influencers',
-        title: 'Influencers',
-        value: totalInfluencers,
-        icon: Users,
-        color: 'text-purple-600',
-        bgColor: 'bg-purple-100',
-        available: totalInfluencers > 0,
-        tooltip: totalInfluencers > 0 ? 'Unique influencers in active campaigns' : 'Connect influencers to see this metric'
-      },
-      {
-        id: 'deliverables',
-        title: 'Deliverables',
-        value: totalDeliverables,
-        icon: Building2,
-        color: 'text-indigo-600',
-        bgColor: 'bg-indigo-100',
-        available: true,
-        tooltip: 'Total deliverables across active campaigns'
-      }
-    ];
-  }, [campaigns]);
-
-  const handleCardClick = (cardId: string) => {
+  function handleCardClick(cardId: string) {
     switch (cardId) {
       case 'active-campaigns':
         setFilterStatus('active');
@@ -108,7 +41,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         console.log('Deliverables view not yet implemented');
         break;
     }
-  };
+  }
 
   const filteredCampaigns = campaigns
     .filter(campaign => {
