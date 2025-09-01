@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, DollarSign, Target, Globe, Building2, Tag, Clock, AlertTriangle, CheckCircle, ArrowRight, TrendingUp, BarChart3 } from 'lucide-react';
 import { Campaign } from '../types/campaign';
-import { SmartNumberInput } from './SmartNumberInput';
+import SmartNumberInput from './SmartNumberInput';
 import { formatNumber, getKpiDisplayValue } from '../utils/numberFormatting';
 
 interface CampaignInitializationProps {

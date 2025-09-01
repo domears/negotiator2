@@ -274,4 +274,5 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
   );
 };
 
-export { SmartNumberInput }
+
+export default SmartNumberInput
