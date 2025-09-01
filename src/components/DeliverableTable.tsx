@@ -158,6 +158,25 @@ const DeliverableTable: React.FC<DeliverableTableProps> = ({
                       >
                         Add your first deliverable
                       </button>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      
+      <BulkEditModal
+        isOpen={isBulkEditOpen}
+        onClose={() => setIsBulkEditOpen(false)}
+        selectedCount={selectedRowIds.length}
+        onApply={onBulkEdit}
+      />
+    </>
+  );
+};
+
+export default React.memo(DeliverableTable);
                     </div>
                   </td>
                 </tr>
