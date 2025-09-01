@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Edit3, Users, Save } from 'lucide-react';
-import { BulkEditOptions } from '../types/campaign';
-import { platformDeliverables, cohortTypes } from '../utils/mockData';
+import { BulkEditOptions, Rights } from '../types/campaign';
+import { platformDeliverables } from '../utils/mockData';
 
 interface BulkEditModalProps {
   isOpen: boolean;
@@ -91,7 +91,7 @@ export const BulkEditModal: React.FC<BulkEditModalProps> = ({
                 <select
                   disabled={!activeFields.has('platform')}
                   value={updates.platform || ''}
-                  onChange={(e) => setUpdates(prev => ({ ...prev, platform: e.target.value as any }))}
+                  onChange={(e) => setUpdates(prev => ({ ...prev, platform: e.target.value }))}
                   className="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 disabled:text-gray-500"
                 >
                   <option value="">Select platform</option>
@@ -187,9 +187,9 @@ export const BulkEditModal: React.FC<BulkEditModalProps> = ({
                   <select
                     disabled={!activeFields.has('rights.usage')}
                     value={updates.rights?.usage || ''}
-                    onChange={(e) => setUpdates(prev => ({ 
-                      ...prev, 
-                      rights: { ...prev.rights, usage: e.target.value as any }
+                    onChange={(e) => setUpdates(prev => ({
+                      ...prev,
+                      rights: { ...prev.rights, usage: e.target.value as Rights['usage'] }
                     }))}
                     className="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100"
                   >
@@ -238,9 +238,9 @@ export const BulkEditModal: React.FC<BulkEditModalProps> = ({
                   <select
                     disabled={!activeFields.has('rights.territory')}
                     value={updates.rights?.territory || ''}
-                    onChange={(e) => setUpdates(prev => ({ 
-                      ...prev, 
-                      rights: { ...prev.rights, territory: e.target.value as any }
+                    onChange={(e) => setUpdates(prev => ({
+                      ...prev,
+                      rights: { ...prev.rights, territory: e.target.value as Rights['territory'] }
                     }))}
                     className="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100"
                   >

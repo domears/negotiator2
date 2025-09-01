@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Download, Settings } from 'lucide-react';
+import { Download, Settings } from 'lucide-react';
 import { SettingsModal } from './SettingsModal';
 
 interface NavbarProps {

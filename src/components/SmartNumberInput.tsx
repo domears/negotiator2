@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AlertCircle, Info, Copy, Check } from 'lucide-react';
-import { parseNumberInput, formatForInput, validateKpiTarget, getKpiPlaceholder, logNumberInputTelemetry, KPI_CONFIGS, parsePercentToBps, formatPercentFromBps } from '../utils/numberFormatting';
+import { parseNumberInput, formatForInput, validateKpiTarget, getKpiPlaceholder, logNumberInputTelemetry, KPI_CONFIGS, parsePercentToBps } from '../utils/numberFormatting';
 import { parseSmartNumber } from '../utils/formatters';
+import { useFormatters } from '../hooks/useFormatters';
 
 interface SmartNumberInputProps {
   kpi: string;
@@ -91,7 +92,7 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
     }
 
     // Validate against KPI constraints
-    const validation = validateKpiTarget(kpi, parsed.value, config?.type || 'count');
+    const validation = validateKpiTarget(kpi, parsed.value);
     if (!validation.isValid) {
       setError(validation.error || 'Invalid value');
       logNumberInputTelemetry('validation_failure', { kpi, value: parsed.value, error: validation.error });

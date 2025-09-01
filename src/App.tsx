@@ -49,7 +49,6 @@ function App() {
     planningMode,
     selectedRowId,
     selectedRowIds,
-    setSelectedRowId,
     setPlanningMode,
     updateDeliverable,
     toggleExpanded,
@@ -93,10 +92,6 @@ function App() {
     if (activeCampaign) {
       exportToCsv(deliverables, metrics, activeCampaign.name);
     }
-  };
-
-  const handleRowClick = (rowId: string) => {
-    setSelectedRowId(rowId === selectedRowId ? null : rowId);
   };
 
   const handleCampaignInitializationComplete = (campaign: Campaign) => {

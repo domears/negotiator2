@@ -298,7 +298,7 @@ export function parseNumberInput(input: string, type: 'count' | 'percent' | 'cur
 /**
  * Validates a parsed number against KPI-specific constraints
  */
-export function validateKpiTarget(kpi: string, value: number, type: 'count' | 'percent' | 'currency' | 'ratio' = 'count'): { isValid: boolean; error?: string } {
+export function validateKpiTarget(kpi: string, value: number): { isValid: boolean; error?: string } {
   const config = KPI_CONFIGS[kpi as keyof typeof KPI_CONFIGS];
   if (!config) {
     return { isValid: true }; // Unknown KPI, allow any value
@@ -491,7 +491,7 @@ export function getKpiPlaceholder(kpi: string): string {
 /**
  * Logs telemetry data for UX improvements
  */
-export function logNumberInputTelemetry(event: 'parse_correction' | 'validation_failure' | 'format_toggle', data: any): void {
+export function logNumberInputTelemetry(event: 'parse_correction' | 'validation_failure' | 'format_toggle', data: unknown): void {
   // In production, this would send to analytics service
   console.log(`[NumberInput Telemetry] ${event}:`, data);
 }
