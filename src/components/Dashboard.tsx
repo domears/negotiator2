@@ -2,8 +2,12 @@ import React, { useState } from 'react';
 import { Plus, Search, Calendar, Users, Building2, Clock, Filter, ArrowRight, TrendingUp } from 'lucide-react';
 import { Campaign } from '../types/campaign';
 import { formatCurrency, calculateScenarioMetrics } from '../utils/calculations';
-import { useDashboardMetrics, useDashboardCards } from '../hooks/useDashboardMetrics';
-import { DashboardCard } from './DashboardCard';
+import {
+  useDashboardMetrics,
+  useDashboardCards,
+  type DashboardCard as DashboardCardType,
+} from '../hooks/useDashboardMetrics';
+import { DashboardCard as DashboardCardComponent } from './DashboardCard';
 
 interface DashboardProps {
   campaigns: Campaign[];
@@ -21,7 +25,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [sortBy, setSortBy] = useState<'name' | 'client' | 'createdAt' | 'budget'>('createdAt');
 
   const metrics = useDashboardMetrics(campaigns);
-  const dashboardCards = useDashboardCards(metrics, handleCardClick);
+  const dashboardCards: DashboardCardType[] = useDashboardCards(
+    metrics,
+    handleCardClick
+  );
 
   function handleCardClick(cardId: string) {
     switch (cardId) {
@@ -134,7 +141,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {dashboardCards.map((card) => (
-            <DashboardCard key={card.id} metric={card} />
+            <DashboardCardComponent key={card.id} metric={card} />
           ))}
         </div>
 
