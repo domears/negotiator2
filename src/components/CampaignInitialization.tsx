@@ -60,7 +60,7 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
   onComplete,
   existingCampaign,
 }) => {
-  const [campaign, setCampaign] = useState<Partial<Campaign>>({
+  const [campaign, setCampaign] = useState<Partial<Campaign>>(() => ({
     name: '',
     client: '',
     brand: '',
@@ -78,7 +78,7 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
     contentThemes: [],
     legalRightsPreset: 'organic',
     ...existingCampaign,
-  });
+  }));
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [currentStep, setCurrentStep] = useState(1);
