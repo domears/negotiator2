@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AlertCircle, Info, Copy, Check } from 'lucide-react';
-import { parseNumberInput, formatForInput, validateKpiTarget, getKpiPlaceholder, logNumberInputTelemetry, KPI_CONFIGS, parsePercentToBps, formatPercentFromBps } from '../utils/numberFormatting';
+import { parseNumberInput, formatForInput, validateKpiTarget, getKpiPlaceholder, logNumberInputTelemetry, KPI_CONFIGS, parsePercentToBps } from '../utils/numberFormatting';
 import { parseSmartNumber } from '../utils/formatters';
+import { useFormatters } from '../hooks/useFormatters';
 
 interface SmartNumberInputProps {
   kpi: string;
