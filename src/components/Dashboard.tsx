@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Search, Calendar, DollarSign, Users, Building2, Clock, Filter, ArrowRight, Folder, TrendingUp } from 'lucide-react';
 import { Campaign } from '../types/campaign';
 import { formatCurrency, calculateScenarioMetrics } from '../utils/calculations';
+import { formatNumber } from '../utils/numberFormatting';
 
 interface DashboardProps {
   campaigns: Campaign[];
