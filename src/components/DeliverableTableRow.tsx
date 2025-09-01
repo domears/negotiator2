@@ -4,6 +4,7 @@ import { DeliverableRow } from '../types/campaign';
 import { InlineEditor } from './InlineEditor';
 import { calculateRowCost, validateRights, formatCurrency } from '../utils/calculations';
 import { platformDeliverables, cohortTypes, mockCreators } from '../utils/mockData';
+import { useFormatters } from '../utils/formatters';
 
 interface DeliverableTableRowProps {
   row: DeliverableRow;
@@ -14,12 +15,10 @@ interface DeliverableTableRowProps {
   isSelected: boolean;
   onToggleSelection: (id: string) => void;
   onMaterializeCohort: (cohortId: string) => void;
-  selectedRowIds: string[];
-  selectedRowIds: string[];
   level?: number;
 }
 
-export const DeliverableTableRow: React.FC<DeliverableTableRowProps> = ({
+const DeliverableTableRow: React.FC<DeliverableTableRowProps> = ({
   row,
   onUpdate,
   onToggleExpanded,
@@ -28,11 +27,11 @@ export const DeliverableTableRow: React.FC<DeliverableTableRowProps> = ({
   isSelected,
   onToggleSelection,
   onMaterializeCohort,
-  selectedRowIds,
   level = 0,
 }) => {
   const [editingField, setEditingField] = useState<string | null>(null);
-  
+  const formatters = useFormatters();
+
   const errors = validateRights(row);
   const hasErrors = errors.length > 0;
   const rowCost = calculateRowCost(row);
@@ -94,16 +93,16 @@ export const DeliverableTableRow: React.FC<DeliverableTableRowProps> = ({
     setEditingField(null);
   };
 
-  return (
+  const memoizedRow = (
     <>
-      <tr className={`border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200 ${
+      <tr className={`h-12 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200 ${
         hasErrors ? 'bg-red-50' : ''
       } ${level > 0 ? 'bg-blue-50' : ''} ${
         isSelected ? 'bg-primary-50 border-primary-200' : ''
-      } ${row.needsApproval ? 'bg-yellow-50' : ''}`}>
+      } ${row.needsApproval ? 'bg-yellow-50' : ''}`} style={{ height: '48px' }}>
         
         {/* Selection Checkbox */}
-        <td className="px-6 py-4 whitespace-nowrap">
+        <td className="px-6 py-4 whitespace-nowrap w-12">
           <input
             type="checkbox"
             checked={isSelected}
@@ -112,7 +111,7 @@ export const DeliverableTableRow: React.FC<DeliverableTableRowProps> = ({
           />
         </td>
         
-        <td className="px-6 py-4 whitespace-nowrap">
+        <td className="px-6 py-4 whitespace-nowrap min-w-0">
           <div className="flex items-center space-x-2" style={{ paddingLeft: `${level * 24}px` }}>
             {isParent && (
               <button
@@ -152,7 +151,7 @@ export const DeliverableTableRow: React.FC<DeliverableTableRowProps> = ({
           </div>
         </td>
         
-        <td className="px-6 py-4 whitespace-nowrap">
+        <td className="px-6 py-4 whitespace-nowrap min-w-0">
           {editingField === 'platform' ? (
             <InlineEditor
               value={row.platform}
@@ -176,7 +175,7 @@ export const DeliverableTableRow: React.FC<DeliverableTableRowProps> = ({
           )}
         </td>
         
-        <td className="px-6 py-4 whitespace-nowrap">
+        <td className="px-6 py-4 whitespace-nowrap min-w-0">
           {editingField === 'deliverableType' ? (
             <InlineEditor
               value={row.deliverableType}
@@ -198,7 +197,7 @@ export const DeliverableTableRow: React.FC<DeliverableTableRowProps> = ({
           )}
         </td>
         
-        <td className="px-6 py-4 whitespace-nowrap">
+        <td className="px-6 py-4 whitespace-nowrap min-w-0">
           {editingField === 'creatorInfo' ? (
             <InlineEditor
               value={row.creatorInfo.toString()}
@@ -237,7 +236,7 @@ export const DeliverableTableRow: React.FC<DeliverableTableRowProps> = ({
         </td>
         
         {/* Cohort Size */}
-        <td className="px-6 py-4 whitespace-nowrap">
+        <td className="px-6 py-4 whitespace-nowrap min-w-0 tabular-nums">
           {row.creatorType === 'cohort' ? (
             editingField === 'cohortSize' ? (
               <InlineEditor
@@ -260,7 +259,7 @@ export const DeliverableTableRow: React.FC<DeliverableTableRowProps> = ({
           )}
         </td>
         
-        <td className="px-6 py-4 whitespace-nowrap">
+        <td className="px-6 py-4 whitespace-nowrap min-w-0 tabular-nums">
           {editingField === 'quantity' ? (
             <InlineEditor
               value={row.quantity}
@@ -278,7 +277,7 @@ export const DeliverableTableRow: React.FC<DeliverableTableRowProps> = ({
           )}
         </td>
         
-        <td className="px-6 py-4 whitespace-nowrap">
+        <td className="px-6 py-4 whitespace-nowrap min-w-0 tabular-nums">
           {editingField === 'unitFee' ? (
             <InlineEditor
               value={row.unitFee}
@@ -296,7 +295,7 @@ export const DeliverableTableRow: React.FC<DeliverableTableRowProps> = ({
           )}
         </td>
         
-        <td className="px-6 py-4 whitespace-nowrap">
+        <td className="px-6 py-4 whitespace-nowrap min-w-0">
           <div className="flex items-center space-x-2">
             {editingField === 'rightsUsage' ? (
               <InlineEditor
@@ -345,7 +344,7 @@ export const DeliverableTableRow: React.FC<DeliverableTableRowProps> = ({
           </div>
         </td>
         
-        <td className="px-6 py-4 whitespace-nowrap text-right font-medium">
+        <td className="px-6 py-4 whitespace-nowrap text-right font-medium min-w-0 tabular-nums">
           <div className="flex items-center justify-end space-x-2">
             {hasErrors && (
               <AlertTriangle className="h-4 w-4 text-red-500" title={errors.join(', ')} />
@@ -356,7 +355,7 @@ export const DeliverableTableRow: React.FC<DeliverableTableRowProps> = ({
           </div>
         </td>
         
-        <td className="px-6 py-4 whitespace-nowrap text-right">
+        <td className="px-6 py-4 whitespace-nowrap text-right min-w-0">
           <div className="flex items-center justify-end space-x-2">
             {canMaterialize && (
               <button
@@ -397,13 +396,16 @@ export const DeliverableTableRow: React.FC<DeliverableTableRowProps> = ({
           onToggleExpanded={onToggleExpanded}
           onAddChild={onAddChild}
           onDeleteRow={onDeleteRow}
-          isSelected={selectedRowIds.includes(child.id)}
+          isSelected={selectedRowIds?.includes(child.id) || false}
           onToggleSelection={onToggleSelection}
           onMaterializeCohort={onMaterializeCohort}
-          selectedRowIds={selectedRowIds}
           level={level + 1}
         />
       ))}
     </>
   );
+
+  return memoizedRow;
 };
+
+export default React.memo(DeliverableTableRow);

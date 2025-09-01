@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Check, X } from 'lucide-react';
+import { useFormatters, parseSmartNumber } from '../utils/formatters';
 
 interface InlineEditorProps {
   value: string | number;
@@ -21,7 +22,9 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   className = '',
 }) => {
   const [editValue, setEditValue] = useState(value.toString());
+  const [isComposing, setIsComposing] = useState(false);
   const inputRef = useRef<HTMLInputElement | HTMLSelectElement>(null);
+  const formatters = useFormatters();
 
   useEffect(() => {
     if (inputRef.current) {
@@ -32,28 +35,41 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
     }
   }, []);
 
-  const handleSave = () => {
-    const finalValue = type === 'number' ? parseFloat(editValue) : editValue;
+  const handleCommit = () => {
+    const finalValue = type === 'number' ? parseSmartNumber(editValue) : editValue;
     onSave(finalValue);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSave();
+      e.preventDefault();
+      handleCommit();
     } else if (e.key === 'Escape') {
+      e.preventDefault();
       onCancel();
     }
   };
 
+  const handleCompositionStart = () => {
+    setIsComposing(true);
+  };
+
+  const handleCompositionEnd = (e: React.CompositionEvent) => {
+    setIsComposing(false);
+    if (e.currentTarget instanceof HTMLInputElement) {
+      setEditValue(e.currentTarget.value);
+    }
+  };
+
   return (
-    <div className={`flex items-center space-x-2 ${className}`}>
+    <div className={`flex items-center space-x-2 ${className}`} style={{ minHeight: '32px' }}>
       {type === 'select' ? (
         <select
           ref={inputRef as React.RefObject<HTMLSelectElement>}
           value={editValue}
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="block w-full rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
+          className="block w-full rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500 tabular-nums"
         >
           {options.map((option) => (
             <option key={option.value} value={option.value}>
@@ -67,22 +83,27 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
           type={type}
           value={editValue}
           onChange={(e) => setEditValue(e.target.value)}
+          onCompositionStart={handleCompositionStart}
+          onCompositionEnd={handleCompositionEnd}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="block w-full rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500"
+          inputMode={type === 'number' ? 'decimal' : 'text'}
+          className="block w-full rounded-md border-gray-300 text-sm focus:border-primary-500 focus:ring-primary-500 tabular-nums"
         />
       )}
       
       <div className="flex space-x-1">
         <button
-          onClick={handleSave}
+          onClick={handleCommit}
           className="p-1 text-green-600 hover:bg-green-50 rounded transition-colors duration-200"
+          type="button"
         >
           <Check className="h-4 w-4" />
         </button>
         <button
           onClick={onCancel}
           className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors duration-200"
+          type="button"
         >
           <X className="h-4 w-4" />
         </button>

@@ -4,7 +4,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { Dashboard } from './components/Dashboard';
 import { CampaignInitialization } from './components/CampaignInitialization';
 import { Navbar } from './components/Navbar';
-import { DeliverableTable } from './components/DeliverableTable';
+import DeliverableTable from './components/DeliverableTable';
 import { MediaSummary } from './components/MediaSummary';
 import { PriceTransparencyPanel } from './components/PriceTransparencyPanel';
 import { useMediaSummaryData } from './hooks/useMediaSummaryData';

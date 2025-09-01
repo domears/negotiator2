@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AlertCircle, Info, Copy, Check } from 'lucide-react';
 import { parseNumberInput, formatForInput, validateKpiTarget, getKpiPlaceholder, logNumberInputTelemetry, KPI_CONFIGS, parsePercentToBps, formatPercentFromBps } from '../utils/numberFormatting';
+import { useFormatters, parseSmartNumber } from '../utils/formatters';
 
 interface SmartNumberInputProps {
   kpi: string;
@@ -21,40 +22,50 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
 }) => {
   const [displayValue, setDisplayValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  const [editing, setEditing] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showGhost, setShowGhost] = useState(false);
   const [ghostValue, setGhostValue] = useState('');
   const [copySuccess, setCopySuccess] = useState(false);
   
   const inputRef = useRef<HTMLInputElement>(null);
+  const isComposingRef = useRef(false);
   const config = KPI_CONFIGS[kpi as keyof typeof KPI_CONFIGS];
+  const formatters = useFormatters();
   
   // Initialize display value
   useEffect(() => {
-    if (!isFocused && value > 0) {
+    if (!isFocused && editing === null && value > 0) {
       setDisplayValue(formatForInput(value, config?.type || 'count', false));
     } else if (value === 0) {
       setDisplayValue('');
     }
-  }, [value, isFocused, config?.type]);
+  }, [value, isFocused, editing, config?.type]);
 
   const handleFocus = () => {
     setIsFocused(true);
     setError(null);
+    setShowGhost(false);
     // Show raw value for editing
     if (config?.type === 'percent') {
       // Convert from bps to percentage for editing
-      setDisplayValue(value > 0 ? (value / 100).toString() : '');
+      const rawValue = value > 0 ? (value / 100).toString() : '';
+      setEditing(rawValue);
+      setDisplayValue(rawValue);
     } else {
-      setDisplayValue(value > 0 ? value.toString() : '');
+      const rawValue = value > 0 ? value.toString() : '';
+      setEditing(rawValue);
+      setDisplayValue(rawValue);
     }
   };
 
-  const handleBlur = () => {
+  const handleCommit = () => {
+    const inputValue = editing || displayValue;
     setIsFocused(false);
+    setEditing(null);
     setShowGhost(false);
     
-    if (displayValue.trim() === '') {
+    if (inputValue.trim() === '') {
       onChange(0);
       setDisplayValue('');
       return;
@@ -62,7 +73,7 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
 
     let parsed;
     if (config?.type === 'percent') {
-      const percentResult = parsePercentToBps(displayValue);
+      const percentResult = parsePercentToBps(inputValue);
       parsed = {
         value: percentResult.bps,
         rawInput: percentResult.rawInput,
@@ -70,12 +81,12 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
         error: percentResult.error
       };
     } else {
-      parsed = parseNumberInput(displayValue, config?.type || 'count');
+      parsed = parseNumberInput(inputValue, config?.type || 'count');
     }
     
     if (!parsed.isValid) {
       setError(parsed.error || 'Invalid number format');
-      logNumberInputTelemetry('validation_failure', { kpi, input: displayValue, error: parsed.error });
+      logNumberInputTelemetry('validation_failure', { kpi, input: inputValue, error: parsed.error });
       return;
     }
 
@@ -88,10 +99,10 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
     }
 
     // Log if we corrected the input format
-    if (parsed.rawInput !== displayValue) {
+    if (parsed.rawInput !== inputValue) {
       logNumberInputTelemetry('parse_correction', { 
         kpi, 
-        original: displayValue, 
+        original: inputValue, 
         corrected: parsed.rawInput,
         finalValue: parsed.value 
       });
@@ -104,17 +115,27 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
     setDisplayValue(formatForInput(parsed.value, config?.type || 'count', false));
   };
 
+  const handleCompositionStart = () => {
+    isComposingRef.current = true;
+  };
+
+  const handleCompositionEnd = (e: React.CompositionEvent<HTMLInputElement>) => {
+    isComposingRef.current = false;
+    setEditing(e.currentTarget.value);
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
+    setEditing(newValue);
     setDisplayValue(newValue);
     setError(null);
 
     // Show ghost hint for large numbers (not for percentages)
-    if (config?.type !== 'percent') {
+    if (config?.type !== 'percent' && !isComposingRef.current) {
       if (newValue.length >= 4 && /^\d+$/.test(newValue)) {
-        const parsed = parseNumberInput(newValue, config?.type || 'count');
-        if (parsed.isValid && parsed.value >= 1000) {
-          const compactFormat = formatForInput(parsed.value, config?.type || 'count', false);
+        const parsedValue = parseSmartNumber(newValue);
+        if (parsedValue >= 1000) {
+          const compactFormat = formatters.compact.format(parsedValue);
           if (compactFormat !== newValue) {
             setGhostValue(compactFormat);
             setShowGhost(true);
@@ -131,6 +152,14 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Handle Enter key to commit
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleCommit();
+      inputRef.current?.blur();
+      return;
+    }
+
     // Keyboard shortcuts for suffixes (not applicable to percentages)
     if (e.altKey) {
       const suffixMap: Record<string, string> = {
@@ -141,9 +170,11 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
       };
       
       const suffix = suffixMap[e.key.toLowerCase()];
-      if (suffix && displayValue && /^\d*\.?\d+$/.test(displayValue) && config?.type !== 'percent') {
+      if (suffix && editing && /^\d*\.?\d+$/.test(editing) && config?.type !== 'percent') {
         e.preventDefault();
-        setDisplayValue(prev => prev + suffix);
+        const newValue = editing + suffix;
+        setEditing(newValue);
+        setDisplayValue(newValue);
       }
     }
 
@@ -199,19 +230,22 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
           ref={inputRef}
           id={inputId}
           type="text"
-          value={displayValue}
+          value={editing ?? displayValue}
           onChange={handleChange}
+          onCompositionStart={handleCompositionStart}
+          onCompositionEnd={handleCompositionEnd}
           onFocus={handleFocus}
-          onBlur={handleBlur}
+          onBlur={handleCommit}
           onKeyDown={handleKeyDown}
           disabled={disabled}
           placeholder={getKpiPlaceholder(kpi)}
+          inputMode="decimal"
           aria-describedby={helperId}
           className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 text-sm ${
             config?.type === 'currency' ? 'pl-8' : ''
           } ${config?.type === 'ratio' ? 'pr-8' : config?.unit ? 'pr-20' : ''} ${
             error ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''
-          } ${disabled ? 'bg-gray-100 text-gray-500' : ''}`}
+          } ${disabled ? 'bg-gray-100 text-gray-500' : ''} tabular-nums`}
         />
         
         {/* Unit suffix */}
@@ -222,14 +256,14 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
         )}
         
         {/* Ghost value hint */}
-        {showGhost && ghostValue && config?.type !== 'percent' && (
+        {showGhost && ghostValue && config?.type !== 'percent' && !editing && (
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
             <span className="text-gray-400 text-xs">= {ghostValue}</span>
           </div>
         )}
         
         {/* Copy button */}
-        {value > 0 && !isFocused && (
+        {value > 0 && !isFocused && !editing && (
           <button
             type="button"
             onClick={() => handleCopy('current')}
@@ -260,7 +294,7 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
         ) : null}
         
         {/* Format examples */}
-        {isFocused && !error && (
+        {isFocused && !error && editing !== null && (
           <div className="text-xs text-gray-400">
             {config?.type === 'percent' ? (
               <p>Accepts: 5, 5%, 0.07 (interpreted as 5%, 5%, 0.07%)</p>
