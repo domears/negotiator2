@@ -10,7 +10,7 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true };
   }
 
-  componentDidCatch(err: unknown) {
+  componentDidCatch() {
     // optional: send to telemetry
     // console.error('ErrorBoundary caught:', err);
   }

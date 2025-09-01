@@ -96,8 +96,6 @@ export const MediaSummary: React.FC<MediaSummaryProps> = ({
     },
   ];
 
-  const allMetrics = [...coreMetrics, ...additionalMetrics];
-
   return (
     <>
       {/* Toggle Button - Always visible on the right edge */}

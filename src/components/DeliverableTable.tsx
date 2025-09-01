@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plus, Edit3, X } from 'lucide-react';
-import { DeliverableRow } from '../types/campaign';
+import { DeliverableRow, BulkEditOptions } from '../types/campaign';
 import DeliverableTableRow from './DeliverableTableRow';
 import { BulkEditModal } from './BulkEditModal';
 
@@ -14,7 +14,7 @@ interface DeliverableTableProps {
   selectedRowIds: string[];
   onToggleRowSelection: (id: string) => void;
   onClearSelection: () => void;
-  onBulkEdit: (updates: any) => void;
+  onBulkEdit: (updates: BulkEditOptions) => void;
   onMaterializeCohort: (cohortId: string) => void;
 }
 

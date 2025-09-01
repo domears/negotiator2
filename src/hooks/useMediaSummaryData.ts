@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { DeliverableRow, PlanningMode, BulkEditOptions, Creator, Campaign } from '../types/campaign';
-import { createMockDeliverable, sampleDeliverables, mockCreators } from '../utils/mockData';
+import { DeliverableRow, PlanningMode, BulkEditOptions } from '../types/campaign';
+import { createMockDeliverable, mockCreators } from '../utils/mockData';
 import { inheritRights, applyBulkEdit, materializeCohort, calculateRightsMultiplier } from '../utils/calculations';
 
 export const useMediaSummaryData = (

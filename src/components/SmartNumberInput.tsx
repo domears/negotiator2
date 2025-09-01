@@ -92,7 +92,7 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
     }
 
     // Validate against KPI constraints
-    const validation = validateKpiTarget(kpi, parsed.value, config?.type || 'count');
+    const validation = validateKpiTarget(kpi, parsed.value);
     if (!validation.isValid) {
       setError(validation.error || 'Invalid value');
       logNumberInputTelemetry('validation_failure', { kpi, value: parsed.value, error: validation.error });

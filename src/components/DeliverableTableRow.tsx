@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, AlertTriangle, Instagram, Youtube, X, Users, Zap } from 'lucide-react';
-import { DeliverableRow } from '../types/campaign';
+import { DeliverableRow, Rights } from '../types/campaign';
 import { InlineEditor } from './InlineEditor';
 import { calculateRowCost, validateRights, formatCurrency } from '../utils/calculations';
 import { platformDeliverables, cohortTypes, mockCreators } from '../utils/mockData';
@@ -34,7 +34,6 @@ const DeliverableTableRow: React.FC<DeliverableTableRowProps> = ({
   const hasErrors = errors.length > 0;
   const rowCost = calculateRowCost(row);
   const isParent = row.type === 'organic';
-  const hasChildren = row.children && row.children.length > 0;
   const canMaterialize = row.creatorType === 'cohort' && !row.isMaterialized;
 
   const getPlatformIcon = (platform: string) => {
@@ -76,12 +75,12 @@ const DeliverableTableRow: React.FC<DeliverableTableRowProps> = ({
       }
     } else if (field === 'platform') {
       onUpdate(row.id, { 
-        platform: value as any,
+        platform: value as DeliverableRow['platform'],
         deliverableType: platformDeliverables[value as keyof typeof platformDeliverables][0]
       });
     } else if (field === 'rightsUsage') {
       onUpdate(row.id, { 
-        rights: { ...row.rights, usage: value as any }
+        rights: { ...row.rights, usage: value as Rights['usage'] }
       });
     } else if (field === 'rightsDuration') {
       onUpdate(row.id, { 

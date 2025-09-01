@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, DollarSign, Target, Globe, Building2, Tag, Clock, AlertTriangle, CheckCircle, ArrowRight, TrendingUp, BarChart3 } from 'lucide-react';
+import { DollarSign, Target, Globe, Building2, Clock, AlertTriangle, CheckCircle, ArrowRight, BarChart3 } from 'lucide-react';
 import { Campaign } from '../types/campaign';
 import SmartNumberInput from './SmartNumberInput';
-import { formatNumber, getKpiDisplayValue } from '../utils/numberFormatting';
+import { getKpiDisplayValue } from '../utils/numberFormatting';
 
 interface CampaignInitializationProps {
   onComplete: (campaign: Campaign) => void;
@@ -713,7 +713,7 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
                         name="budgetType"
                         value="campaign"
                         checked={campaign.budgetType === 'campaign'}
-                        onChange={(e) => setCampaign(prev => ({ ...prev, budgetType: e.target.value as any }))}
+                        onChange={(e) => setCampaign(prev => ({ ...prev, budgetType: e.target.value as Campaign['budgetType'] }))}
                         className="border-gray-300 text-primary-600 focus:ring-primary-500"
                       />
                       <div>
@@ -727,7 +727,7 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
                         name="budgetType"
                         value="scenario"
                         checked={campaign.budgetType === 'scenario'}
-                        onChange={(e) => setCampaign(prev => ({ ...prev, budgetType: e.target.value as any }))}
+                        onChange={(e) => setCampaign(prev => ({ ...prev, budgetType: e.target.value as Campaign['budgetType'] }))}
                         className="border-gray-300 text-primary-600 focus:ring-primary-500"
                       />
                       <div>
@@ -813,7 +813,7 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
                       </label>
                       <select
                         value={campaign.legalRightsPreset || ''}
-                        onChange={(e) => setCampaign(prev => ({ ...prev, legalRightsPreset: e.target.value as any }))}
+                        onChange={(e) => setCampaign(prev => ({ ...prev, legalRightsPreset: e.target.value as Campaign['legalRightsPreset'] }))}
                         className="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500"
                       >
                         <option value="organic">Organic Only</option>

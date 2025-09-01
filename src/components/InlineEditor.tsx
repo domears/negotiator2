@@ -22,7 +22,6 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   className = '',
 }) => {
   const [editValue, setEditValue] = useState(value.toString());
-  const [isComposing, setIsComposing] = useState(false);
   const inputRef = useRef<HTMLInputElement | HTMLSelectElement>(null);
 
   useEffect(() => {
@@ -49,17 +48,6 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
     }
   };
 
-  const handleCompositionStart = () => {
-    setIsComposing(true);
-  };
-
-  const handleCompositionEnd = (e: React.CompositionEvent) => {
-    setIsComposing(false);
-    if (e.currentTarget instanceof HTMLInputElement) {
-      setEditValue(e.currentTarget.value);
-    }
-  };
-
   return (
     <div className={`flex items-center space-x-2 ${className}`} style={{ minHeight: '32px' }}>
       {type === 'select' ? (
@@ -82,8 +70,6 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
           type={type}
           value={editValue}
           onChange={(e) => setEditValue(e.target.value)}
-          onCompositionStart={handleCompositionStart}
-          onCompositionEnd={handleCompositionEnd}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           inputMode={type === 'number' ? 'decimal' : 'text'}

@@ -164,7 +164,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <Filter className="h-4 w-4 text-gray-400" />
                 <select
                   value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value as any)}
+                  onChange={(e) => setFilterStatus(e.target.value as 'all' | 'active' | 'completed')}
                   className="border border-gray-300 rounded-md text-sm focus:border-primary-500 focus:ring-primary-500"
                 >
                   <option value="all">All Campaigns</option>
@@ -178,7 +178,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <span className="text-sm text-gray-600">Sort by:</span>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
+                onChange={(e) => setSortBy(e.target.value as 'name' | 'client' | 'createdAt' | 'budget')}
                 className="border border-gray-300 rounded-md text-sm focus:border-primary-500 focus:ring-primary-500"
               >
                 <option value="createdAt">Created Date</option>
