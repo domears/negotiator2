@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Search, Calendar, DollarSign, Users, Building2, Clock, Filter, ArrowRight, Folder, TrendingUp } from 'lucide-react';
 import { Campaign } from '../types/campaign';
 import { formatCurrency, calculateScenarioMetrics } from '../utils/calculations';
-import { useDashboardMetrics } from '../hooks/useDashboardMetrics';
+import { useDashboardMetrics, useDashboardCards } from '../hooks/useDashboardMetrics';
 import { DashboardCard } from './DashboardCard';
 import { useFormatters } from '../hooks/useFormatters';
 
@@ -200,7 +200,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {cards.map((card) => (
+          {dashboardCards.map((card) => (
             <DashboardCard key={card.id} metric={card} />
           ))}
         </div>

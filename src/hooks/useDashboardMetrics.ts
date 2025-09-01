@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { Campaign } from '../types/campaign';
 import { calculateScenarioMetrics } from '../utils/calculations';
-import { useFormatters } from './useFormatters';
 
 export interface DashboardMetrics {
   activeCampaigns: number;
