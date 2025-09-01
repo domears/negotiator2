@@ -5,6 +5,13 @@ export interface ParsedNumber {
   error?: string;
 }
 
+export interface PercentParseResult {
+  bps: number;
+  rawInput: string;
+  isValid: boolean;
+  error?: string;
+}
+
 export interface NumberDisplayOptions {
   style: 'compact' | 'full';
   locale?: string;
@@ -18,6 +25,66 @@ const SUFFIX_MULTIPLIERS = {
   b: 1_000_000_000,
   t: 1_000_000_000_000,
 } as const;
+
+/**
+ * Parses a string input into basis points (bps) for percentage storage
+ * Rules: 5 → 5% → 500 bps, 7% → 7% → 700 bps, 0.07 → 0.07% → 7 bps
+ */
+export function parsePercentToBps(input: string): PercentParseResult {
+  if (!input || input.trim() === '') {
+    return { bps: 0, rawInput: input, isValid: true };
+  }
+
+  const sanitized = sanitizeInput(input);
+  
+  // Handle percentage inputs - both with and without % symbol
+  const percentMatch = sanitized.match(/^(\d*\.?\d+)%?$/);
+  if (percentMatch) {
+    const numValue = parseFloat(percentMatch[1]);
+    
+    if (isNaN(numValue) || numValue < 0) {
+      return {
+        bps: 0,
+        rawInput: input,
+        isValid: false,
+        error: 'Percentage must be a positive number'
+      };
+    }
+    
+    if (numValue > 100) {
+      return {
+        bps: 0,
+        rawInput: input,
+        isValid: false,
+        error: 'Percentage cannot exceed 100%'
+      };
+    }
+    
+    // Convert to basis points (multiply by 100 to get bps)
+    const bps = Math.round(numValue * 100);
+    return { bps, rawInput: input, isValid: true };
+  }
+
+  return {
+    bps: 0,
+    rawInput: input,
+    isValid: false,
+    error: 'Invalid percentage format'
+  };
+}
+
+/**
+ * Formats basis points back to percentage display with exactly 1 decimal
+ * Rules: 700 bps → 7.0%, 7 bps → 0.1% (rounded up from 0.07%)
+ */
+export function formatPercentFromBps(bps: number): string {
+  const percent = bps / 100;
+  
+  // Round to 1 decimal place using half-up rounding
+  const rounded = Math.round(percent * 10) / 10;
+  
+  return `${rounded.toFixed(1)}%`;
+}
 
 // KPI-specific configuration
 export const KPI_CONFIGS = {
@@ -70,20 +137,20 @@ export const KPI_CONFIGS = {
     minValue: 1
   },
   'Brand Lift': { 
-    type: 'percentage' as const, 
+    type: 'percent' as const, 
     unit: '% lift', 
     placeholder: '5.0', 
     suggestion: 'Typical lift ranges 2-10%',
-    maxValue: 100,
-    minValue: 0.1
+    maxValue: 10000, // 100% in bps
+    minValue: 10 // 0.1% in bps
   },
   'Purchase Intent': { 
-    type: 'percentage' as const, 
+    type: 'percent' as const, 
     unit: '% increase', 
     placeholder: '15.0', 
     suggestion: 'Intent increase among exposed audience',
-    maxValue: 100,
-    minValue: 0.1
+    maxValue: 10000, // 100% in bps
+    minValue: 10 // 0.1% in bps
   },
   'Website Traffic': { 
     type: 'count' as const, 
@@ -142,7 +209,7 @@ export function sanitizeInput(input: string): string {
 /**
  * Parses a string input into a numeric value, handling suffixes and various formats
  */
-export function parseNumberInput(input: string, type: 'count' | 'percentage' | 'currency' | 'ratio'): ParsedNumber {
+export function parseNumberInput(input: string, type: 'count' | 'percent' | 'currency' | 'ratio'): ParsedNumber {
   if (!input || input.trim() === '') {
     return { value: 0, rawInput: input, isValid: true };
   }
@@ -150,21 +217,14 @@ export function parseNumberInput(input: string, type: 'count' | 'percentage' | '
   const sanitized = sanitizeInput(input);
   
   // Handle percentage inputs
-  if (type === 'percentage') {
-    const percentMatch = sanitized.match(/^(\d*\.?\d+)%?$/);
-    if (percentMatch) {
-      const numValue = parseFloat(percentMatch[1]);
-      if (isNaN(numValue) || numValue < 0 || numValue > 100) {
-        return {
-          value: 0,
-          rawInput: input,
-          isValid: false,
-          error: 'Percentage must be between 0 and 100'
-        };
-      }
-      // Store as decimal (0-1 range)
-      return { value: numValue / 100, rawInput: input, isValid: true };
-    }
+  if (type === 'percent') {
+    const percentResult = parsePercentToBps(input);
+    return {
+      value: percentResult.bps,
+      rawInput: percentResult.rawInput,
+      isValid: percentResult.isValid,
+      error: percentResult.error
+    };
   }
 
   // Handle scientific notation
@@ -238,23 +298,26 @@ export function parseNumberInput(input: string, type: 'count' | 'percentage' | '
 /**
  * Validates a parsed number against KPI-specific constraints
  */
-export function validateKpiTarget(kpi: string, value: number): { isValid: boolean; error?: string } {
+export function validateKpiTarget(kpi: string, value: number, type: 'count' | 'percent' | 'currency' | 'ratio' = 'count'): { isValid: boolean; error?: string } {
   const config = KPI_CONFIGS[kpi as keyof typeof KPI_CONFIGS];
   if (!config) {
     return { isValid: true }; // Unknown KPI, allow any value
   }
 
+  // For percent types, value is in bps, so compare against bps limits
   if (value < config.minValue) {
+    const displayMin = config.type === 'percent' ? formatPercentFromBps(config.minValue) : formatNumber(config.minValue, { style: 'full' });
     return {
       isValid: false,
-      error: `${kpi} must be at least ${formatNumber(config.minValue, { style: 'full' })}`
+      error: `${kpi} must be at least ${displayMin}`
     };
   }
 
   if (value > config.maxValue) {
+    const displayMax = config.type === 'percent' ? formatPercentFromBps(config.maxValue) : formatNumber(config.maxValue, { style: 'compact' });
     return {
       isValid: false,
-      error: `${kpi} cannot exceed ${formatNumber(config.maxValue, { style: 'compact' })}`
+      error: `${kpi} cannot exceed ${displayMax}`
     };
   }
 
@@ -266,18 +329,13 @@ export function validateKpiTarget(kpi: string, value: number): { isValid: boolea
  */
 export function formatNumber(
   value: number, 
-  options: NumberDisplayOptions & { type?: 'count' | 'percentage' | 'currency' | 'ratio'; currencyCode?: string } = {}
+  options: NumberDisplayOptions & { type?: 'count' | 'percent' | 'currency' | 'ratio'; currencyCode?: string } = {}
 ): string {
   const { style = 'full', locale = 'en-US', maxDecimals = 1, type = 'count', currencyCode = 'USD' } = options;
 
-  if (type === 'percentage') {
-    // Convert from decimal storage (0-1) to percentage display (0-100)
-    const percentValue = value * 100;
-    return new Intl.NumberFormat(locale, {
-      style: 'percent',
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 1,
-    }).format(value);
+  if (type === 'percent') {
+    // Value is in bps, convert to percentage display
+    return formatPercentFromBps(value);
   }
 
   if (type === 'currency') {
@@ -373,18 +431,19 @@ function removeTrailingZeros(str: string): string {
 /**
  * Formats number for input field display (with commas when not focused)
  */
-export function formatForInput(value: number, type: 'count' | 'percentage' | 'currency' | 'ratio', isFocused: boolean = false): string {
+export function formatForInput(value: number, type: 'count' | 'percent' | 'currency' | 'ratio', isFocused: boolean = false): string {
   if (isFocused) {
     // Show raw value while typing to avoid caret jumps
-    if (type === 'percentage') {
-      return (value * 100).toString();
+    if (type === 'percent') {
+      // Convert from bps to percentage for display
+      return (value / 100).toString();
     }
     return value.toString();
   }
 
   // Format with appropriate separators when not focused
-  if (type === 'percentage') {
-    return `${(value * 100).toFixed(1)}%`;
+  if (type === 'percent') {
+    return formatPercentFromBps(value);
   }
 
   if (type === 'ratio') {
@@ -420,6 +479,10 @@ export function getKpiPlaceholder(kpi: string): string {
 
   if (config.type === 'count') {
     return `e.g., ${config.placeholder} or ${formatNumber(parseNumberInput(config.placeholder.replace(/,/g, ''), 'count').value, { style: 'compact' })}`;
+  }
+
+  if (config.type === 'percent') {
+    return `e.g., ${config.placeholder} or ${config.placeholder}%`;
   }
 
   return `e.g., ${config.placeholder}`;

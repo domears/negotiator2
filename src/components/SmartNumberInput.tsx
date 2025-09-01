@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AlertCircle, Info, Copy, Check } from 'lucide-react';
-import { parseNumberInput, formatForInput, validateKpiTarget, getKpiPlaceholder, logNumberInputTelemetry, KPI_CONFIGS } from '../utils/numberFormatting';
+import { parseNumberInput, formatForInput, validateKpiTarget, getKpiPlaceholder, logNumberInputTelemetry, KPI_CONFIGS, parsePercentToBps, formatPercentFromBps } from '../utils/numberFormatting';
 
 interface SmartNumberInputProps {
   kpi: string;
@@ -42,8 +42,9 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
     setIsFocused(true);
     setError(null);
     // Show raw value for editing
-    if (config?.type === 'percentage') {
-      setDisplayValue((value * 100).toString());
+    if (config?.type === 'percent') {
+      // Convert from bps to percentage for editing
+      setDisplayValue(value > 0 ? (value / 100).toString() : '');
     } else {
       setDisplayValue(value > 0 ? value.toString() : '');
     }
@@ -59,7 +60,18 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
       return;
     }
 
-    const parsed = parseNumberInput(displayValue, config?.type || 'count');
+    let parsed;
+    if (config?.type === 'percent') {
+      const percentResult = parsePercentToBps(displayValue);
+      parsed = {
+        value: percentResult.bps,
+        rawInput: percentResult.rawInput,
+        isValid: percentResult.isValid,
+        error: percentResult.error
+      };
+    } else {
+      parsed = parseNumberInput(displayValue, config?.type || 'count');
+    }
     
     if (!parsed.isValid) {
       setError(parsed.error || 'Invalid number format');
@@ -68,7 +80,7 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
     }
 
     // Validate against KPI constraints
-    const validation = validateKpiTarget(kpi, parsed.value);
+    const validation = validateKpiTarget(kpi, parsed.value, config?.type || 'count');
     if (!validation.isValid) {
       setError(validation.error || 'Invalid value');
       logNumberInputTelemetry('validation_failure', { kpi, value: parsed.value, error: validation.error });
@@ -97,27 +109,29 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
     setDisplayValue(newValue);
     setError(null);
 
-    // Show ghost hint for large numbers
-    if (newValue.length >= 4 && /^\d+$/.test(newValue)) {
-      const parsed = parseNumberInput(newValue, config?.type || 'count');
-      if (parsed.isValid && parsed.value >= 1000) {
-        const compactFormat = formatForInput(parsed.value, config?.type || 'count', false);
-        if (compactFormat !== newValue) {
-          setGhostValue(compactFormat);
-          setShowGhost(true);
+    // Show ghost hint for large numbers (not for percentages)
+    if (config?.type !== 'percent') {
+      if (newValue.length >= 4 && /^\d+$/.test(newValue)) {
+        const parsed = parseNumberInput(newValue, config?.type || 'count');
+        if (parsed.isValid && parsed.value >= 1000) {
+          const compactFormat = formatForInput(parsed.value, config?.type || 'count', false);
+          if (compactFormat !== newValue) {
+            setGhostValue(compactFormat);
+            setShowGhost(true);
+          } else {
+            setShowGhost(false);
+          }
         } else {
           setShowGhost(false);
         }
       } else {
         setShowGhost(false);
       }
-    } else {
-      setShowGhost(false);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Keyboard shortcuts for suffixes
+    // Keyboard shortcuts for suffixes (not applicable to percentages)
     if (e.altKey) {
       const suffixMap: Record<string, string> = {
         'k': 'K',
@@ -127,7 +141,7 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
       };
       
       const suffix = suffixMap[e.key.toLowerCase()];
-      if (suffix && displayValue && /^\d*\.?\d+$/.test(displayValue)) {
+      if (suffix && displayValue && /^\d*\.?\d+$/.test(displayValue) && config?.type !== 'percent') {
         e.preventDefault();
         setDisplayValue(prev => prev + suffix);
       }
@@ -208,7 +222,7 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
         )}
         
         {/* Ghost value hint */}
-        {showGhost && ghostValue && (
+        {showGhost && ghostValue && config?.type !== 'percent' && (
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
             <span className="text-gray-400 text-xs">= {ghostValue}</span>
           </div>
@@ -248,9 +262,10 @@ export const SmartNumberInput: React.FC<SmartNumberInputProps> = ({
         {/* Format examples */}
         {isFocused && !error && (
           <div className="text-xs text-gray-400">
-            <p>Accepts: 1000, 1,000, 1K, 1.5M, 2.5B</p>
-            {config?.type === 'percentage' && (
-              <p>For percentages: 5, 5%, or 0.05 (all = 5%)</p>
+            {config?.type === 'percent' ? (
+              <p>Accepts: 5, 5%, 0.07 (interpreted as 5%, 5%, 0.07%)</p>
+            ) : (
+              <p>Accepts: 1000, 1,000, 1K, 1.5M, 2.5B</p>
             )}
           </div>
         )}

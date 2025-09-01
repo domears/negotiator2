@@ -601,7 +601,7 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
                         <h4 className="font-medium text-accent-900 mb-3">Your Campaign Targets:</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {Object.entries(campaign.goals || {}).map(([kpi, value]) => (
-                            <div key={kpi} className="flex justify-between items-center py-1">
+                            {getKpiDisplayValue(kpi, value, 'compact')}
                               <span className="text-sm text-accent-800">{kpi}:</span>
                               <span className="text-sm font-medium text-accent-900">
                                 {formatNumber(value, { 
@@ -842,12 +842,6 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Audit Notes (Optional)
-                      </label>
-                      <textarea
-                        value={campaign.auditNotes || ''}
-                        onChange={(e) => setCampaign(prev => ({ ...prev, auditNotes: e.target.value }))}
-                        placeholder="Record planner rationale and assumptions"
                         rows={3}
                         className="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500"
                       />
