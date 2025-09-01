@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Edit3 } from 'lucide-react';
 import { CampaignInitialization } from './components/CampaignInitialization';
 import { Navbar } from './components/Navbar';
 import { DeliverableTable } from './components/DeliverableTable';
@@ -29,6 +30,7 @@ function App() {
   } = useMediaSummaryData();
 
   const [isMediaSummaryOpen, setIsMediaSummaryOpen] = useState(true);
+  const [isEditingCampaign, setIsEditingCampaign] = useState(false);
   
   const metrics = calculateScenarioMetrics(scenario.deliverables);
   const selectedRow = selectedRowId 
@@ -44,9 +46,19 @@ function App() {
     setSelectedRowId(rowId === selectedRowId ? null : rowId);
   };
 
+  const handleCampaignUpdate = (updatedCampaign: Campaign) => {
+    initializeCampaign(updatedCampaign);
+    setIsEditingCampaign(false);
+  };
+
   // Show campaign initialization if no campaign is set
-  if (!campaign) {
-    return <CampaignInitialization onComplete={initializeCampaign} />;
+  if (!campaign || isEditingCampaign) {
+    return (
+      <CampaignInitialization 
+        onComplete={isEditingCampaign ? handleCampaignUpdate : initializeCampaign}
+        existingCampaign={isEditingCampaign ? campaign : undefined}
+      />
+    );
   }
 
   return (
@@ -62,6 +74,13 @@ function App() {
           <div>
             <div className="flex items-center space-x-3">
               <h2 className="text-2xl font-bold text-gray-900">{campaign.name}</h2>
+              <button
+                onClick={() => setIsEditingCampaign(true)}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                title="Edit campaign details"
+              >
+                <Edit3 className="h-4 w-4" />
+              </button>
               <span className="px-3 py-1 bg-primary-100 text-primary-800 text-sm font-medium rounded-full">
                 {campaign.client} • {campaign.brand}
               </span>
