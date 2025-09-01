@@ -1,3 +1,4 @@
+import { useFormatters } from '../hooks/useFormatters';
 import { useMemo } from 'react';
 import { Campaign } from '../types/campaign';
 import { calculateScenarioMetrics } from '../utils/calculations';
