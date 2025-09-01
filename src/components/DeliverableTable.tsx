@@ -159,6 +159,7 @@ const DeliverableTable: React.FC<DeliverableTableProps> = ({
                         Add your first deliverable
                       </button>
                     </div>
+                  </td>
                 </tr>
               )}
             </tbody>
