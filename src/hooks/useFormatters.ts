@@ -73,5 +73,9 @@ export function useFormatters(defaults?: { locale?: string; currency?: string })
       const fraction = (clamped / 100) / 100;
       return percent.format(fraction);
     },
+
+    // Additional convenience methods for Dashboard compatibility
+    number: (n) => full.format(Math.max(0, coerce(n))),
+    money: (n, currencyCode = defaultCurrency) => currency(currencyCode).format(Math.max(0, coerce(n))),
   };
 }
