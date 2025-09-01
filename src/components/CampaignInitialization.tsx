@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, DollarSign, Target, Globe, Building2, Tag, Clock, AlertTriangle, CheckCircle, ArrowRight, TrendingUp, BarChart3 } from 'lucide-react';
 import { Campaign } from '../types/campaign';
 import { SmartNumberInput } from './SmartNumberInput';
-import { formatNumber } from '../utils/numberFormatting';
+import { formatNumber, getKpiDisplayValue } from '../utils/numberFormatting';
 
 interface CampaignInitializationProps {
   onComplete: (campaign: Campaign) => void;
@@ -599,20 +599,16 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
                       <div className="mt-6 p-4 bg-white rounded-lg border border-accent-300">
                         <h4 className="font-medium text-accent-900 mb-3">Your Campaign Targets:</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {Object.entries(campaign.goals || {}).map(([kpi, value]) => (
-                            <div key={kpi} className="flex justify-between items-center">
-                              <span className="text-sm text-accent-800">{kpi}:</span>
-                              <span className="text-sm font-medium text-accent-900">
-                                {formatNumber(value, { 
-                                  style: 'compact',
-                                  type: kpi.includes('%') || kpi.includes('Lift') || kpi.includes('Intent') ? 'percentage' : 
-                                        kpi.includes('Revenue') || kpi.includes('Cost') ? 'currency' :
-                                        kpi.includes('ROAS') || kpi.includes('Return') ? 'ratio' : 'count',
-                                  currencyCode: campaign.currency
-                                })}
-                              </span>
-                            </div>
-                          ))}
+                          {(Object.entries(campaign?.goals ?? {}) as [string, number][])
+                            .map(([kpi, value]) => {
+                              const display = getKpiDisplayValue(kpi, value, 'compact');
+                              return (
+                                <div key={kpi} className="flex justify-between items-center">
+                                  <span className="text-sm text-accent-800">{kpi}:</span>
+                                  <span className="text-sm font-medium text-accent-900">{display}</span>
+                                </div>
+                              );
+                            })}
                         </div>
                       </div>
                     )}
