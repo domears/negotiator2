@@ -1,9 +1,9 @@
 import React from 'react';
 import { TrendingUp, DollarSign, Users, FileText, AlertCircle } from 'lucide-react';
-import { DashboardMetric } from '../hooks/useDashboardMetrics';
+import { DashboardCard as DashboardCardType } from '../hooks/useDashboardMetrics';
 
 interface DashboardCardProps {
-  metric: DashboardMetric;
+  metric: DashboardCardType;
   loading?: boolean;
   error?: string | null;
 }
