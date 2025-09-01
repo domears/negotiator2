@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, DollarSign, Target, Globe, Building2, Tag, Clock, AlertTriangle, CheckCircle, ArrowRight } from 'lucide-react';
+import { Calendar, DollarSign, Target, Globe, Building2, Tag, Clock, AlertTriangle, CheckCircle, ArrowRight, TrendingUp } from 'lucide-react';
 import { Campaign } from '../types/campaign';
 
 interface CampaignInitializationProps {
@@ -55,6 +55,22 @@ const contentThemes = [
   'Holiday', 'Product Launch', 'Cause-Related', 'Seasonal', 'Educational',
   'Entertainment', 'User-Generated Content', 'Behind-the-Scenes', 'Testimonials'
 ];
+
+const kpiUnits = {
+  'Reach': { unit: 'people', type: 'number', placeholder: '1000000', suggestion: 'Consider your target market size' },
+  'Impressions': { unit: 'impressions', type: 'number', placeholder: '5000000', suggestion: 'Typically 3-5x your reach goal' },
+  'Views': { unit: 'views', type: 'number', placeholder: '500000', suggestion: 'Video completion views or page views' },
+  'Engagements': { unit: 'interactions', type: 'number', placeholder: '50000', suggestion: 'Likes, shares, comments combined' },
+  'Clicks': { unit: 'clicks', type: 'number', placeholder: '25000', suggestion: 'Link clicks or CTA interactions' },
+  'Conversions': { unit: 'conversions', type: 'number', placeholder: '1000', suggestion: 'Completed desired actions' },
+  'Brand Lift': { unit: '%', type: 'percentage', placeholder: '5', suggestion: 'Typical lift ranges 2-10%' },
+  'Purchase Intent': { unit: '%', type: 'percentage', placeholder: '15', suggestion: 'Intent increase among exposed audience' },
+  'Website Traffic': { unit: 'sessions', type: 'number', placeholder: '100000', suggestion: 'New sessions from campaign' },
+  'Lead Generation': { unit: 'leads', type: 'number', placeholder: '500', suggestion: 'Qualified leads captured' },
+  'Sales Revenue': { unit: '', type: 'currency', placeholder: '50000', suggestion: 'Direct revenue attribution' },
+  'Cost Per Acquisition': { unit: '', type: 'currency', placeholder: '25', suggestion: 'Target cost per conversion' },
+  'Return on Ad Spend': { unit: ':1', type: 'ratio', placeholder: '4', suggestion: 'Revenue return per dollar spent' }
+};
 
 export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
   onComplete,
@@ -112,7 +128,7 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
       if (!campaign.primaryKpis?.length) newErrors.primaryKpis = 'At least one primary KPI is required';
     }
 
-    if (step >= 4) {
+    if (step >= 5) {
       if (!campaign.startDate) newErrors.startDate = 'Start date is required';
       if (!campaign.endDate) newErrors.endDate = 'End date is required';
       if (campaign.startDate && campaign.endDate && campaign.startDate >= campaign.endDate) {
@@ -120,7 +136,7 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
       }
     }
 
-    if (step >= 5) {
+    if (step >= 6) {
       if (!campaign.budgetAmount || campaign.budgetAmount <= 0) {
         newErrors.budgetAmount = 'Budget amount must be greater than 0';
       }
@@ -142,7 +158,7 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
   };
 
   const handleComplete = () => {
-    const stepErrors = validateStep(5);
+    const stepErrors = validateStep(6);
     setErrors(stepErrors);
     if (Object.keys(stepErrors).length === 0) {
       const completeCampaign: Campaign = {
@@ -459,8 +475,166 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
             </div>
           )}
 
-          {/* Step 4: Timing */}
+          {/* Step 4: Goals & Targets */}
           {currentStep === 4 && (
+            <div className="space-y-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="p-2 bg-primary-100 rounded-lg">
+                  <TrendingUp className="h-6 w-6 text-primary-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Goals & Targets</h2>
+                  <p className="text-gray-600">Set numerical targets for your selected KPIs</p>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                {/* Primary KPI Goals */}
+                {campaign.primaryKpis && campaign.primaryKpis.length > 0 && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+                      Primary KPI Targets
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {campaign.primaryKpis.map((kpi) => {
+                        const kpiConfig = kpiUnits[kpi];
+                        if (!kpiConfig) return null;
+                        
+                        return (
+                          <div key={kpi} className="bg-primary-50 rounded-lg p-4 border border-primary-200">
+                            <label className="block text-sm font-medium text-primary-900 mb-2">
+                              {kpi} Goal
+                            </label>
+                            <div className="flex items-center space-x-2">
+                              {kpiConfig.type === 'currency' && (
+                                <span className="text-gray-600 text-sm">
+                                  {currencies.find(c => c.code === campaign.currency)?.symbol || '$'}
+                                </span>
+                              )}
+                              <input
+                                type="number"
+                                value={campaign.goals?.[kpi] || ''}
+                                onChange={(e) => setCampaign(prev => ({
+                                  ...prev,
+                                  goals: {
+                                    ...prev.goals,
+                                    [kpi]: parseFloat(e.target.value) || 0
+                                  }
+                                }))}
+                                placeholder={kpiConfig.placeholder}
+                                min="0"
+                                step={kpiConfig.type === 'percentage' || kpiConfig.type === 'ratio' ? '0.1' : '1'}
+                                className="flex-1 rounded-md border-primary-300 focus:border-primary-500 focus:ring-primary-500 text-sm"
+                              />
+                              <span className="text-gray-600 text-sm min-w-0 flex-shrink-0">
+                                {kpiConfig.unit}
+                              </span>
+                            </div>
+                            <p className="text-xs text-primary-700 mt-2">
+                              💡 {kpiConfig.suggestion}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Secondary KPI Goals */}
+                {campaign.secondaryKpis && campaign.secondaryKpis.length > 0 && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+                      Secondary KPI Targets (Optional)
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {campaign.secondaryKpis.map((kpi) => {
+                        const kpiConfig = kpiUnits[kpi];
+                        if (!kpiConfig) return null;
+                        
+                        return (
+                          <div key={kpi} className="bg-secondary-50 rounded-lg p-4 border border-secondary-200">
+                            <label className="block text-sm font-medium text-secondary-900 mb-2">
+                              {kpi} Goal
+                            </label>
+                            <div className="flex items-center space-x-2">
+                              {kpiConfig.type === 'currency' && (
+                                <span className="text-gray-600 text-sm">
+                                  {currencies.find(c => c.code === campaign.currency)?.symbol || '$'}
+                                </span>
+                              )}
+                              <input
+                                type="number"
+                                value={campaign.goals?.[kpi] || ''}
+                                onChange={(e) => setCampaign(prev => ({
+                                  ...prev,
+                                  goals: {
+                                    ...prev.goals,
+                                    [kpi]: parseFloat(e.target.value) || 0
+                                  }
+                                }))}
+                                placeholder={kpiConfig.placeholder}
+                                min="0"
+                                step={kpiConfig.type === 'percentage' || kpiConfig.type === 'ratio' ? '0.1' : '1'}
+                                className="flex-1 rounded-md border-secondary-300 focus:border-secondary-500 focus:ring-secondary-500 text-sm"
+                              />
+                              <span className="text-gray-600 text-sm min-w-0 flex-shrink-0">
+                                {kpiConfig.unit}
+                              </span>
+                            </div>
+                            <p className="text-xs text-secondary-700 mt-2">
+                              💡 {kpiConfig.suggestion}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Goals Summary */}
+                {(campaign.primaryKpis?.length || 0) + (campaign.secondaryKpis?.length || 0) > 0 && (
+                  <div className="bg-gradient-to-br from-accent-50 to-accent-100 rounded-lg p-6 border border-accent-200">
+                    <h3 className="text-lg font-semibold text-accent-900 mb-4 flex items-center space-x-2">
+                      <Target className="h-5 w-5" />
+                      <span>Goal Setting Tips</span>
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-accent-800">
+                      <div className="space-y-2">
+                        <p className="font-medium">📊 SMART Goals Framework:</p>
+                        <ul className="space-y-1 text-xs">
+                          <li>• <strong>Specific:</strong> Clear, well-defined targets</li>
+                          <li>• <strong>Measurable:</strong> Quantifiable metrics</li>
+                          <li>• <strong>Achievable:</strong> Realistic expectations</li>
+                          <li>• <strong>Relevant:</strong> Aligned with objectives</li>
+                          <li>• <strong>Time-bound:</strong> Campaign duration context</li>
+                        </ul>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="font-medium">🎯 Best Practices:</p>
+                        <ul className="space-y-1 text-xs">
+                          <li>• Set stretch goals that challenge performance</li>
+                          <li>• Consider seasonal and market factors</li>
+                          <li>• Align targets with historical benchmarks</li>
+                          <li>• Leave room for optimization during flight</li>
+                        </ul>
+                      </div>
+                    </div>
+                    
+                    {Object.keys(campaign.goals || {}).length === 0 && (
+                      <div className="mt-4 p-3 bg-white rounded border border-accent-300">
+                        <p className="text-sm text-accent-800">
+                          <strong>Optional but Recommended:</strong> Setting specific numerical targets helps measure campaign success and guides optimization decisions throughout the campaign lifecycle.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Step 5: Timing */}
+          {currentStep === 5 && (
             <div className="space-y-6">
               <div className="flex items-center space-x-3 mb-6">
                 <div className="p-2 bg-primary-100 rounded-lg">
@@ -529,8 +703,8 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
             </div>
           )}
 
-          {/* Step 5: Budget */}
-          {currentStep === 5 && (
+          {/* Step 6: Budget */}
+          {currentStep === 6 && (
             <div className="space-y-6">
               <div className="flex items-center space-x-3 mb-6">
                 <div className="p-2 bg-primary-100 rounded-lg">
