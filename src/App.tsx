@@ -131,136 +131,140 @@ function App() {
   // Show campaign initialization for new or editing
   if (isCreatingNewCampaign || isEditingActiveCampaign) {
     return (
-      <CampaignInitialization 
-        onComplete={handleCampaignInitializationComplete}
-        existingCampaign={isEditingActiveCampaign ? activeCampaign : undefined}
-      />
+      <ErrorBoundary>
+        <CampaignInitialization 
+          onComplete={handleCampaignInitializationComplete}
+          existingCampaign={isEditingActiveCampaign ? activeCampaign : undefined}
+        />
+      </ErrorBoundary>
     );
   }
 
   // Show main campaign interface
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar
-        onExport={handleExport}
-        planningMode={planningMode}
-        onPlanningModeChange={setPlanningMode}
-        onBackToDashboard={handleBackToDashboard}
-      />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <div className="flex items-center space-x-3">
-              <h2 className="text-2xl font-bold text-gray-900">{activeCampaign?.name}</h2>
-              <button
-                onClick={handleEditActiveCampaign}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-                title="Edit campaign details"
-              >
-                <Edit3 className="h-4 w-4" />
-              </button>
-              <span className="px-3 py-1 bg-primary-100 text-primary-800 text-sm font-medium rounded-full">
-                {activeCampaign?.client} • {activeCampaign?.brand}
-              </span>
-            </div>
-            <p className="text-gray-600 mt-1">
-              {deliverables.length} deliverables • {planningMode} planning mode • {activeCampaign?.markets.join(', ')}
-            </p>
-          </div>
-        </div>
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gray-50">
+        <Navbar
+          onExport={handleExport}
+          planningMode={planningMode}
+          onPlanningModeChange={setPlanningMode}
+          onBackToDashboard={handleBackToDashboard}
+        />
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            <DeliverableTable
-              deliverables={deliverables}
-              onUpdate={updateDeliverable}
-              onToggleExpanded={toggleExpanded}
-              onAddChild={addChildDeliverable}
-              onAddRow={addDeliverable}
-              onDeleteRow={deleteDeliverable}
-              selectedRowIds={selectedRowIds}
-              onToggleRowSelection={toggleRowSelection}
-              onClearSelection={clearSelection}
-              onBulkEdit={bulkEditDeliverables}
-              onMaterializeCohort={materializeGenericCohort}
-            />
-            
-            <PriceTransparencyPanel selectedRow={selectedRow} />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <div className="flex items-center space-x-3">
+                <h2 className="text-2xl font-bold text-gray-900">{activeCampaign?.name}</h2>
+                <button
+                  onClick={handleEditActiveCampaign}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                  title="Edit campaign details"
+                >
+                  <Edit3 className="h-4 w-4" />
+                </button>
+                <span className="px-3 py-1 bg-primary-100 text-primary-800 text-sm font-medium rounded-full">
+                  {activeCampaign?.client} • {activeCampaign?.brand}
+                </span>
+              </div>
+              <p className="text-gray-600 mt-1">
+                {deliverables.length} deliverables • {planningMode} planning mode • {activeCampaign?.markets.join(', ')}
+              </p>
+            </div>
           </div>
           
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Campaign Overview
-              </h3>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <DeliverableTable
+                deliverables={deliverables}
+                onUpdate={updateDeliverable}
+                onToggleExpanded={toggleExpanded}
+                onAddChild={addChildDeliverable}
+                onAddRow={addDeliverable}
+                onDeleteRow={deleteDeliverable}
+                selectedRowIds={selectedRowIds}
+                onToggleRowSelection={toggleRowSelection}
+                onClearSelection={clearSelection}
+                onBulkEdit={bulkEditDeliverables}
+                onMaterializeCohort={materializeGenericCohort}
+              />
               
-              <div className="space-y-3">
-                <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-                  <span className="text-sm text-gray-600">Total Investment</span>
-                  <span className="text-lg font-bold text-gray-900">
-                    {formatCurrency(metrics.totalCost)}
-                  </span>
-                </div>
+              <PriceTransparencyPanel selectedRow={selectedRow} />
+            </div>
+            
+            <div className="space-y-6">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Campaign Overview
+                </h3>
                 
-                <div className="grid grid-cols-2 gap-4 text-center">
-                  <div className="bg-green-50 rounded-lg p-3">
-                    <p className="text-xs text-green-600 font-medium">Organic</p>
-                    <p className="text-lg font-bold text-green-800">
-                      {formatCurrency(metrics.organicCost)}
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center pb-2 border-b border-gray-100">
+                    <span className="text-sm text-gray-600">Total Investment</span>
+                    <span className="text-lg font-bold text-gray-900">
+                      {formatCurrency(metrics.totalCost)}
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 text-center">
+                    <div className="bg-green-50 rounded-lg p-3">
+                      <p className="text-xs text-green-600 font-medium">Organic</p>
+                      <p className="text-lg font-bold text-green-800">
+                        {formatCurrency(metrics.organicCost)}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-blue-50 rounded-lg p-3">
+                      <p className="text-xs text-blue-600 font-medium">Paid</p>
+                      <p className="text-lg font-bold text-blue-800">
+                        {formatCurrency(metrics.paidCost)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-gradient-to-br from-primary-50 to-secondary-50 rounded-lg p-6 border border-primary-100">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Quick Tips
+                </h3>
+                
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-start space-x-2">
+                    <div className="w-2 h-2 bg-primary-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-700">
+                      Use cohorts for flexible budget planning, then materialize into specific creators
                     </p>
                   </div>
                   
-                  <div className="bg-blue-50 rounded-lg p-3">
-                    <p className="text-xs text-blue-600 font-medium">Paid</p>
-                    <p className="text-lg font-bold text-blue-800">
-                      {formatCurrency(metrics.paidCost)}
+                  <div className="flex items-start space-x-2">
+                    <div className="w-2 h-2 bg-secondary-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-700">
+                      Rights and pricing cascade from parent to child deliverables
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-start space-x-2">
+                    <div className="w-2 h-2 bg-accent-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-700">
+                      Use bulk edit to apply changes to multiple deliverables at once
                     </p>
                   </div>
                 </div>
               </div>
             </div>
-            
-            <div className="bg-gradient-to-br from-primary-50 to-secondary-50 rounded-lg p-6 border border-primary-100">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Quick Tips
-              </h3>
-              
-              <div className="space-y-3 text-sm">
-                <div className="flex items-start space-x-2">
-                  <div className="w-2 h-2 bg-primary-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <p className="text-gray-700">
-                    Use cohorts for flexible budget planning, then materialize into specific creators
-                  </p>
-                </div>
-                
-                <div className="flex items-start space-x-2">
-                  <div className="w-2 h-2 bg-secondary-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <p className="text-gray-700">
-                    Rights and pricing cascade from parent to child deliverables
-                  </p>
-                </div>
-                
-                <div className="flex items-start space-x-2">
-                  <div className="w-2 h-2 bg-accent-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <p className="text-gray-700">
-                    Use bulk edit to apply changes to multiple deliverables at once
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
+        
+        <MediaSummary
+          isOpen={isMediaSummaryOpen}
+          onClose={() => setIsMediaSummaryOpen(false)}
+          onToggle={() => setIsMediaSummaryOpen(!isMediaSummaryOpen)}
+          metrics={metrics}
+          deliverables={deliverables}
+        />
       </div>
-      
-      <MediaSummary
-        isOpen={isMediaSummaryOpen}
-        onClose={() => setIsMediaSummaryOpen(false)}
-        onToggle={() => setIsMediaSummaryOpen(!isMediaSummaryOpen)}
-        metrics={metrics}
-        deliverables={deliverables}
-      />
-    </div>
+    </ErrorBoundary>
   );
 }
 

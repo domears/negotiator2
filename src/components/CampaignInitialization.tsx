@@ -603,7 +603,7 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
                             .map(([kpi, value]) => {
                               const display = getKpiDisplayValue(kpi, value, 'compact');
                               return (
-                                <div key={kpi} className="flex justify-between items-center">
+                                <div key={kpi} className="flex items-center justify-between rounded-lg border border-accent-200 p-2">
                                   <span className="text-sm text-accent-800">{kpi}:</span>
                                   <span className="text-sm font-medium text-accent-900">{display}</span>
                                 </div>
