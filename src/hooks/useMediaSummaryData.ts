@@ -1,59 +1,59 @@
 import { useState, useCallback } from 'react';
-import { DeliverableRow, CampaignScenario, PlanningMode, BulkEditOptions, Creator, Campaign, Scenario } from '../types/campaign';
+import { DeliverableRow, PlanningMode, BulkEditOptions, Creator, Campaign } from '../types/campaign';
 import { createMockDeliverable, sampleDeliverables, mockCreators } from '../utils/mockData';
 import { inheritRights, applyBulkEdit, materializeCohort, calculateRightsMultiplier } from '../utils/calculations';
 
-export const useMediaSummaryData = () => {
-  const [campaign, setCampaign] = useState<Campaign | null>(null);
-  const [scenario, setScenario] = useState<CampaignScenario>({
-    id: '1',
-    name: 'Q1 Campaign',
-    deliverables: sampleDeliverables,
-    planningMode: 'blended',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  });
+export const useMediaSummaryData = (
+  initialDeliverables: DeliverableRow[],
+  initialPlanningMode: PlanningMode,
+  onDeliverablesChange: (deliverables: DeliverableRow[]) => void,
+  onPlanningModeChange: (mode: PlanningMode) => void
+) => {
+  const [deliverables, setDeliverables] = useState<DeliverableRow[]>(initialDeliverables);
+  const [planningMode, setPlanningModeInternal] = useState<PlanningMode>(initialPlanningMode);
   
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
 
-  const initializeCampaign = useCallback((newCampaign: Campaign) => {
-    setCampaign(newCampaign);
-    // Update scenario with campaign info
-    setScenario(prev => ({
-      ...prev,
-      name: `${newCampaign.name} - Base Scenario`,
-    }));
+  // Update internal state when props change
+  React.useEffect(() => {
+    setDeliverables(initialDeliverables);
+  }, [initialDeliverables]);
+
+  React.useEffect(() => {
+    setPlanningModeInternal(initialPlanningMode);
+  }, [initialPlanningMode]);
+
+  // Notify parent of changes
+  React.useEffect(() => {
+    onDeliverablesChange(deliverables);
+  }, [deliverables, onDeliverablesChange]);
+
+  React.useEffect(() => {
+    onPlanningModeChange(planningMode);
+  }, [planningMode, onPlanningModeChange]);
+
+  const setPlanningMode = useCallback((mode: PlanningMode) => {
+    setPlanningModeInternal(mode);
   }, []);
 
   const updateDeliverable = useCallback((id: string, updates: Partial<DeliverableRow>) => {
-    setScenario(prev => ({
-      ...prev,
-      deliverables: updateDeliverableInTree(prev.deliverables, id, updates),
-      updatedAt: new Date(),
-    }));
+    setDeliverables(prev => updateDeliverableInTree(prev, id, updates));
   }, []);
 
   const toggleExpanded = useCallback((id: string) => {
-    setScenario(prev => ({
-      ...prev,
-      deliverables: updateDeliverableInTree(prev.deliverables, id, { 
-        isExpanded: !getDeliverableById(prev.deliverables, id)?.isExpanded 
-      }),
+    setDeliverables(prev => updateDeliverableInTree(prev, id, { 
+      isExpanded: !getDeliverableById(prev, id)?.isExpanded 
     }));
   }, []);
 
   const addDeliverable = useCallback(() => {
     const newDeliverable = createMockDeliverable();
-    setScenario(prev => ({
-      ...prev,
-      deliverables: [...prev.deliverables, newDeliverable],
-      updatedAt: new Date(),
-    }));
+    setDeliverables(prev => [...prev, newDeliverable]);
   }, []);
 
   const addChildDeliverable = useCallback((parentId: string) => {
-    const parent = getDeliverableById(scenario.deliverables, parentId);
+    const parent = getDeliverableById(deliverables, parentId);
     if (!parent) return;
 
     const childDeliverable = createMockDeliverable({
@@ -74,22 +74,14 @@ export const useMediaSummaryData = () => {
       estimatedEngagements: parent.estimatedEngagements * 1.5,
     });
 
-    setScenario(prev => ({
-      ...prev,
-      deliverables: updateDeliverableInTree(prev.deliverables, parentId, {
-        children: [...(parent.children || []), childDeliverable],
-        isExpanded: true,
-      }),
-      updatedAt: new Date(),
+    setDeliverables(prev => updateDeliverableInTree(prev, parentId, {
+      children: [...(parent.children || []), childDeliverable],
+      isExpanded: true,
     }));
-  }, [scenario.deliverables]);
+  }, [deliverables]);
 
   const deleteDeliverable = useCallback((id: string) => {
-    setScenario(prev => ({
-      ...prev,
-      deliverables: removeDeliverableFromTree(prev.deliverables, id),
-      updatedAt: new Date(),
-    }));
+    setDeliverables(prev => removeDeliverableFromTree(prev, id));
     
     // Remove from selections if deleted
     setSelectedRowIds(prev => prev.filter(selectedId => selectedId !== id));
@@ -113,15 +105,11 @@ export const useMediaSummaryData = () => {
   const bulkEditDeliverables = useCallback((updates: BulkEditOptions) => {
     if (selectedRowIds.length === 0) return;
 
-    setScenario(prev => ({
-      ...prev,
-      deliverables: applyBulkEdit(prev.deliverables, selectedRowIds, updates),
-      updatedAt: new Date(),
-    }));
+    setDeliverables(prev => applyBulkEdit(prev, selectedRowIds, updates));
   }, [selectedRowIds]);
 
   const materializeGenericCohort = useCallback((cohortId: string) => {
-    const cohort = getDeliverableById(scenario.deliverables, cohortId);
+    const cohort = getDeliverableById(deliverables, cohortId);
     if (!cohort || cohort.creatorType !== 'cohort') return;
 
     // Get random creators for materialization (in production, this would be API call)
@@ -131,29 +119,16 @@ export const useMediaSummaryData = () => {
     
     const materializedRows = materializeCohort(cohort, selectedCreators);
     
-    setScenario(prev => ({
-      ...prev,
-      deliverables: prev.deliverables.map(row => 
-        row.id === cohortId 
-          ? { ...row, isMaterialized: true, children: [...(row.children || []), ...materializedRows] }
-          : row
-      ),
-      updatedAt: new Date(),
+    setDeliverables(prev => prev.map(row => 
+      row.id === cohortId 
+        ? { ...row, isMaterialized: true, children: [...(row.children || []), ...materializedRows] }
+        : row
     }));
-  }, [scenario.deliverables]);
-
-  const setPlanningMode = useCallback((mode: PlanningMode) => {
-    setScenario(prev => ({
-      ...prev,
-      planningMode: mode,
-      updatedAt: new Date(),
-    }));
-  }, []);
+  }, [deliverables]);
 
   return {
-    campaign,
-    initializeCampaign,
-    scenario,
+    deliverables,
+    planningMode,
     selectedRowIds,
     selectedRowId,
     setSelectedRowId,

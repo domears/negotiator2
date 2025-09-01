@@ -6,12 +6,14 @@ interface NavbarProps {
   onExport: () => void;
   planningMode: string;
   onPlanningModeChange: (mode: string) => void;
+  onBackToDashboard: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ 
   onExport, 
   planningMode, 
-  onPlanningModeChange 
+  onPlanningModeChange,
+  onBackToDashboard
 }) => {
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
 
@@ -21,14 +23,17 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
+            <button
+              onClick={onBackToDashboard}
+              className="flex items-center space-x-2 hover:bg-gray-100 rounded-lg p-2 transition-colors duration-200"
+            >
               <img 
                 src="/negotiator_logo_gradient.png" 
                 alt="Negotiator Logo" 
                 className="h-8 w-8"
               />
               <h1 className="text-2xl font-bold text-gray-900">Negotiator</h1>
-            </div>
+            </button>
             <span className="text-sm text-gray-500 hidden sm:block">
               Influencer Media Planner
             </span>

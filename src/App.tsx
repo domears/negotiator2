@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit3 } from 'lucide-react';
+import { Dashboard } from './components/Dashboard';
 import { CampaignInitialization } from './components/CampaignInitialization';
 import { Navbar } from './components/Navbar';
 import { DeliverableTable } from './components/DeliverableTable';
@@ -8,12 +8,43 @@ import { PriceTransparencyPanel } from './components/PriceTransparencyPanel';
 import { useMediaSummaryData } from './hooks/useMediaSummaryData';
 import { calculateScenarioMetrics, formatCurrency } from './utils/calculations';
 import { exportToCsv } from './utils/export';
+import { Campaign } from './types/campaign';
+import { sampleDeliverables } from './utils/mockData';
 
 function App() {
+  const [allCampaigns, setAllCampaigns] = useState<Campaign[]>([]);
+  const [activeCampaignId, setActiveCampaignId] = useState<string | null>(null);
+  const [isCreatingNewCampaign, setIsCreatingNewCampaign] = useState(false);
+  const [isEditingActiveCampaign, setIsEditingActiveCampaign] = useState(false);
+  const [isMediaSummaryOpen, setIsMediaSummaryOpen] = useState(true);
+
+  const activeCampaign = activeCampaignId 
+    ? allCampaigns.find(c => c.id === activeCampaignId) 
+    : null;
+
+  const handleDeliverablesChange = React.useCallback((newDeliverables: DeliverableRow[]) => {
+    if (activeCampaignId) {
+      setAllCampaigns(prev => prev.map(campaign => 
+        campaign.id === activeCampaignId 
+          ? { ...campaign, deliverables: newDeliverables, updatedAt: new Date() }
+          : campaign
+      ));
+    }
+  }, [activeCampaignId]);
+
+  const handlePlanningModeChange = React.useCallback((newMode: PlanningMode) => {
+    if (activeCampaignId) {
+      setAllCampaigns(prev => prev.map(campaign => 
+        campaign.id === activeCampaignId 
+          ? { ...campaign, planningMode: newMode, updatedAt: new Date() }
+          : campaign
+      ));
+    }
+  }, [activeCampaignId]);
+
   const {
-    campaign,
-    initializeCampaign,
-    scenario,
+    deliverables,
+    planningMode,
     selectedRowId,
     selectedRowIds,
     setSelectedRowId,
@@ -27,66 +58,114 @@ function App() {
     clearSelection,
     bulkEditDeliverables,
     materializeGenericCohort,
-  } = useMediaSummaryData();
-
-  const [isMediaSummaryOpen, setIsMediaSummaryOpen] = useState(true);
-  const [isEditingCampaign, setIsEditingCampaign] = useState(false);
+  } = useMediaSummaryData(
+    activeCampaign?.deliverables || [],
+    activeCampaign?.planningMode || 'blended',
+    handleDeliverablesChange,
+    handlePlanningModeChange
+  );
   
-  const metrics = calculateScenarioMetrics(scenario.deliverables);
+  const metrics = calculateScenarioMetrics(deliverables);
   const selectedRow = selectedRowId 
-    ? scenario.deliverables.find(d => d.id === selectedRowId) || 
-      scenario.deliverables.flatMap(d => d.children || []).find(c => c.id === selectedRowId)
+    ? deliverables.find(d => d.id === selectedRowId) || 
+      deliverables.flatMap(d => d.children || []).find(c => c.id === selectedRowId)
     : null;
 
+  const handleCreateNewCampaign = () => {
+    setIsCreatingNewCampaign(true);
+  };
+
+  const handleSelectCampaign = (campaignId: string) => {
+    setActiveCampaignId(campaignId);
+  };
+
+  const handleBackToDashboard = () => {
+    setActiveCampaignId(null);
+  };
+
+  const handleEditActiveCampaign = () => {
+    setIsEditingActiveCampaign(true);
+  };
+
   const handleExport = () => {
-    exportToCsv(scenario.deliverables, metrics, scenario.name);
+    if (activeCampaign) {
+      exportToCsv(deliverables, metrics, activeCampaign.name);
+    }
   };
 
   const handleRowClick = (rowId: string) => {
     setSelectedRowId(rowId === selectedRowId ? null : rowId);
   };
 
-  const handleCampaignUpdate = (updatedCampaign: Campaign) => {
-    initializeCampaign(updatedCampaign);
-    setIsEditingCampaign(false);
+  const handleCampaignInitializationComplete = (campaign: Campaign) => {
+    if (isCreatingNewCampaign) {
+      // Creating new campaign
+      const newCampaign: Campaign = {
+        ...campaign,
+        deliverables: sampleDeliverables,
+        planningMode: 'blended',
+      };
+      setAllCampaigns(prev => [...prev, newCampaign]);
+      setActiveCampaignId(newCampaign.id);
+      setIsCreatingNewCampaign(false);
+    } else if (isEditingActiveCampaign && activeCampaignId) {
+      // Editing existing campaign
+      setAllCampaigns(prev => prev.map(c => 
+        c.id === activeCampaignId ? { ...campaign, updatedAt: new Date() } : c
+      ));
+      setIsEditingActiveCampaign(false);
+    }
   };
 
-  // Show campaign initialization if no campaign is set
-  if (!campaign || isEditingCampaign) {
+  // Show dashboard if no active campaign
+  if (!activeCampaignId && !isCreatingNewCampaign && !isEditingActiveCampaign) {
     return (
-      <CampaignInitialization 
-        onComplete={isEditingCampaign ? handleCampaignUpdate : initializeCampaign}
-        existingCampaign={isEditingCampaign ? campaign : undefined}
+      <Dashboard
+        campaigns={allCampaigns}
+        onCreateNew={handleCreateNewCampaign}
+        onSelectCampaign={handleSelectCampaign}
       />
     );
   }
 
+  // Show campaign initialization for new or editing
+  if (isCreatingNewCampaign || isEditingActiveCampaign) {
+    return (
+      <CampaignInitialization 
+        onComplete={handleCampaignInitializationComplete}
+        existingCampaign={isEditingActiveCampaign ? activeCampaign : undefined}
+      />
+    );
+  }
+
+  // Show main campaign interface
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar
         onExport={handleExport}
-        planningMode={scenario.planningMode}
+        planningMode={planningMode}
         onPlanningModeChange={setPlanningMode}
+        onBackToDashboard={handleBackToDashboard}
       />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
             <div className="flex items-center space-x-3">
-              <h2 className="text-2xl font-bold text-gray-900">{campaign.name}</h2>
+              <h2 className="text-2xl font-bold text-gray-900">{activeCampaign?.name}</h2>
               <button
-                onClick={() => setIsEditingCampaign(true)}
+                onClick={handleEditActiveCampaign}
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
                 title="Edit campaign details"
               >
                 <Edit3 className="h-4 w-4" />
               </button>
               <span className="px-3 py-1 bg-primary-100 text-primary-800 text-sm font-medium rounded-full">
-                {campaign.client} • {campaign.brand}
+                {activeCampaign?.client} • {activeCampaign?.brand}
               </span>
             </div>
             <p className="text-gray-600 mt-1">
-              {scenario.deliverables.length} deliverables • {scenario.planningMode} planning mode • {campaign.markets.join(', ')}
+              {deliverables.length} deliverables • {planningMode} planning mode • {activeCampaign?.markets.join(', ')}
             </p>
           </div>
         </div>
@@ -94,7 +173,7 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <DeliverableTable
-              deliverables={scenario.deliverables}
+              deliverables={deliverables}
               onUpdate={updateDeliverable}
               onToggleExpanded={toggleExpanded}
               onAddChild={addChildDeliverable}
@@ -179,7 +258,7 @@ function App() {
         onClose={() => setIsMediaSummaryOpen(false)}
         onToggle={() => setIsMediaSummaryOpen(!isMediaSummaryOpen)}
         metrics={metrics}
-        deliverables={scenario.deliverables}
+        deliverables={deliverables}
       />
     </div>
   );
