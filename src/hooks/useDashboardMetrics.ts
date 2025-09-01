@@ -39,10 +39,9 @@ export const useDashboardMetrics = (campaigns: Campaign[]): DashboardMetrics => 
     });
 
     // Calculate total budget from active campaigns (convert to cents)
-    const budgetCents = activeCampaigns.reduce((sum, campaign) => {
-      return sum + dollarsToCents(campaign.budgetAmount);
-    }
-    )
+    const totalBudget = activeCampaigns.reduce((sum, campaign) => {
+      return sum + campaign.budgetAmount;
+    }, 0);
     const budgetCents = Math.round(totalBudget * 100); // Convert to cents
 
     // Calculate total influencers from active campaigns
