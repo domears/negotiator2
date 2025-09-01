@@ -11,7 +11,7 @@ import { useMediaSummaryData } from './hooks/useMediaSummaryData';
 import { calculateScenarioMetrics, formatCurrency } from './utils/calculations';
 import { exportToCsv } from './utils/export';
 import { Campaign } from './types/campaign';
-import { sampleDeliverables } from './utils/mockData';
+import { sampleDeliverables, sampleCampaigns } from './utils/mockData';
 
 function App() {
   const [allCampaigns, setAllCampaigns] = useState<Campaign[]>(sampleCampaigns);
