@@ -78,7 +78,7 @@ const DeliverableTable: React.FC<DeliverableTableProps> = ({
           </div>
         </div>
         
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto min-h-[400px]">
           <table className="min-w-full divide-y divide-gray-200" style={{ tableLayout: 'fixed' }}>
             <thead className="bg-gray-50">
               <tr className="h-12">
@@ -128,7 +128,7 @@ const DeliverableTable: React.FC<DeliverableTableProps> = ({
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-gray-200 transition-all duration-200">
               {deliverables.map((row) => (
                 <DeliverableTableRow
                   key={row.id}
@@ -146,7 +146,7 @@ const DeliverableTable: React.FC<DeliverableTableProps> = ({
               
               {deliverables.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="px-6 py-12 text-center">
+                  <td colSpan={11} className="px-6 py-12 text-center h-80">
                     <div className="flex flex-col items-center space-y-3">
                       <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
                         <Plus className="h-6 w-6 text-gray-400" />

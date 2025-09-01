@@ -31,7 +31,7 @@ export const PriceTransparencyPanel: React.FC<PriceTransparencyPanelProps> = ({
   const rightsUpcharge = totalCost - baseCost;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 min-h-[300px] transition-all duration-200">
       <div className="flex items-center space-x-2 mb-4">
         <Calculator className="h-5 w-5 text-primary-600" />
         <h3 className="text-lg font-semibold text-gray-900">Price Breakdown</h3>

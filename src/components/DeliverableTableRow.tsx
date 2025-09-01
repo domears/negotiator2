@@ -92,11 +92,15 @@ const DeliverableTableRow: React.FC<DeliverableTableRowProps> = ({
 
   const memoizedRow = (
     <>
-      <tr className={`h-12 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200 ${
+      <tr className={`h-12 border-b border-gray-100 hover:bg-gray-50 transition-all duration-200 transform ${
         hasErrors ? 'bg-red-50' : ''
       } ${level > 0 ? 'bg-blue-50' : ''} ${
         isSelected ? 'bg-primary-50 border-primary-200' : ''
-      } ${row.needsApproval ? 'bg-yellow-50' : ''}`} style={{ height: '48px' }}>
+      } ${row.needsApproval ? 'bg-yellow-50' : ''}`} 
+        style={{ 
+          height: '48px',
+          animation: 'fadeIn 0.3s ease-in-out'
+        }}>
         
         {/* Selection Checkbox */}
         <td className="px-6 py-4 whitespace-nowrap w-12">
