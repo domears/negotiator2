@@ -1,7 +1,7 @@
 import React from 'react';
-import { Calendar, Users, FileText, MessageCircle, Paperclip, AlertTriangle, Clock, CheckCircle, ArrowRight } from 'lucide-react';
+import { Calendar, MessageCircle, Paperclip, AlertTriangle } from 'lucide-react';
 import { Campaign } from '../types/campaign';
-import { calculateScenarioMetrics, formatCurrency, formatNumber } from '../utils/calculations';
+import { calculateScenarioMetrics } from '../utils/calculations';
 import { useFormatters } from '../hooks/useFormatters';
 
 interface CampaignCardProps {
