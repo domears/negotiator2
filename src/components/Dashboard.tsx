@@ -134,8 +134,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back!</h2>
-          <p className="text-gray-600">Manage your influencer marketing campaigns and track performance</p>
+          <h2 className="text-3xl font-semibold text-gray-800 mb-2">Welcome back!</h2>
+          <p className="text-gray-500">Manage your influencer marketing campaigns and track performance</p>
         </div>
 
         {/* Stats Overview */}
@@ -193,7 +193,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* Campaigns List */}
         <div className="space-y-4">
           {filteredCampaigns.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+            <div className="bg-white rounded-xl shadow-md border border-gray-100 p-12 text-center">
               {campaigns.length === 0 ? (
                 <>
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -226,7 +226,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <div
                   key={campaign.id}
                   onClick={() => onSelectCampaign(campaign.id)}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-primary-200 transition-all duration-200 cursor-pointer group"
+                  className="bg-white rounded-xl shadow-md border border-gray-100 p-6 hover:shadow-lg hover:border-primary-200 transition-all duration-200 cursor-pointer group"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">

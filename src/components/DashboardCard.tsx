@@ -37,7 +37,7 @@ export const DashboardCard: React.FC<DashboardCardProps> = ({
 
   return (
     <div
-      className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 transition-all duration-200 ${
+      className={`bg-white rounded-xl shadow-md border border-gray-100 p-6 transition-all duration-200 ${
         metric.onClick && !loading && !error
           ? 'hover:shadow-md hover:border-primary-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2'
           : ''
