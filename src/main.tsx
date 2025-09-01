@@ -4,6 +4,7 @@ import App from './App.tsx';
 import LoginPage from './pages/LoginPage';
 import WelcomePage from './pages/WelcomePage';
 import './index.css';
+import { SupabaseAuthProvider } from './hooks/useSupabaseAuth';
 
 function Router() {
   const [path, setPath] = useState(window.location.pathname);
@@ -31,6 +32,8 @@ function Router() {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Router />
+    <SupabaseAuthProvider>
+      <Router />
+    </SupabaseAuthProvider>
   </StrictMode>
 );
