@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Campaign } from '../types/campaign';
 import { calculateScenarioMetrics } from '../utils/calculations';
-import { countCompact, countFull, usdCompact, usdFull, dollarsToCents } from '../utils/kpiFormat';
+import { countCompact, countFull, usdCompact } from '../utils/formatters';
 
 export interface DashboardMetrics {
   activeCampaigns: number;
@@ -41,7 +41,9 @@ export const useDashboardMetrics = (campaigns: Campaign[]): DashboardMetrics => 
     // Calculate total budget from active campaigns (convert to cents)
     const budgetCents = activeCampaigns.reduce((sum, campaign) => {
       return sum + dollarsToCents(campaign.budgetAmount);
-    }, 0);
+    }
+    )
+    const budgetCents = Math.round(totalBudget * 100); // Convert to cents
 
     // Calculate total influencers from active campaigns
     const influencers = activeCampaigns.reduce((sum, campaign) => {
@@ -103,7 +105,7 @@ export const useDashboardCards = (
         title: 'Budget',
         value: metrics.budgetCents,
         formattedValue: usdCompact(metrics.budgetCents),
-        fullValue: usdFull(metrics.budgetCents),
+        fullValue: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(metrics.budgetCents / 100),
         icon: 'DollarSign',
         color: 'text-blue-600',
         bgColor: 'bg-blue-100',

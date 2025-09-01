@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Check, X } from 'lucide-react';
-import { useFormatters, parseSmartNumber } from '../utils/formatters';
+import { parseSmartNumber } from '../utils/formatters';
 
 interface InlineEditorProps {
   value: string | number;
@@ -24,7 +24,6 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   const [editValue, setEditValue] = useState(value.toString());
   const [isComposing, setIsComposing] = useState(false);
   const inputRef = useRef<HTMLInputElement | HTMLSelectElement>(null);
-  const formatters = useFormatters();
 
   useEffect(() => {
     if (inputRef.current) {

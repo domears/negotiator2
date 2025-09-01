@@ -4,7 +4,6 @@ import { DeliverableRow } from '../types/campaign';
 import { InlineEditor } from './InlineEditor';
 import { calculateRowCost, validateRights, formatCurrency } from '../utils/calculations';
 import { platformDeliverables, cohortTypes, mockCreators } from '../utils/mockData';
-import { useFormatters } from '../utils/formatters';
 
 interface DeliverableTableRowProps {
   row: DeliverableRow;
@@ -30,7 +29,6 @@ const DeliverableTableRow: React.FC<DeliverableTableRowProps> = ({
   level = 0,
 }) => {
   const [editingField, setEditingField] = useState<string | null>(null);
-  const formatters = useFormatters();
 
   const errors = validateRights(row);
   const hasErrors = errors.length > 0;
