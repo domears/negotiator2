@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { DeliverableRow, PlanningMode, BulkEditOptions, Creator, Campaign } from '../types/campaign';
 import { createMockDeliverable, sampleDeliverables, mockCreators } from '../utils/mockData';
 import { inheritRights, applyBulkEdit, materializeCohort, calculateRightsMultiplier } from '../utils/calculations';
@@ -123,7 +123,7 @@ export const useMediaSummaryData = (
       row.id === cohortId 
         ? { ...row, isMaterialized: true, children: [...(row.children || []), ...materializedRows] }
         : row
-    }));
+    ));
   }, [deliverables]);
 
   return {
