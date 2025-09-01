@@ -15,9 +15,98 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onCreateNew,
   onSelectCampaign,
 }) => {
+  const { compact, currency } = useFormatters();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'completed'>('all');
   const [sortBy, setSortBy] = useState<'name' | 'client' | 'createdAt' | 'budget'>('createdAt');
+
+  // Calculate dashboard metrics
+  const dashboardMetrics = React.useMemo((): DashboardMetric[] => {
+    const now = new Date();
+    const activeCampaigns = campaigns.filter(c => c.startDate <= now && c.endDate >= now);
+    
+    // Calculate total budget from active campaigns
+    const totalBudget = activeCampaigns.reduce((sum, c) => sum + c.budgetAmount, 0);
+    
+    // Calculate total influencers from active campaigns
+    // For now, estimate based on deliverables (in production, this would query actual influencer relationships)
+    const totalInfluencers = activeCampaigns.reduce((sum, c) => {
+      return sum + c.deliverables.reduce((deliverableSum, d) => {
+        if (d.creatorType === 'cohort' && d.cohortSize) {
+          return deliverableSum + d.cohortSize;
+        } else if (d.creatorType === 'specific') {
+          return deliverableSum + 1;
+        }
+        return deliverableSum + d.quantity; // For archetypes
+      }, 0);
+    }, 0);
+    
+    // Calculate total deliverables from active campaigns
+    const totalDeliverables = activeCampaigns.reduce((sum, c) => sum + c.deliverables.length, 0);
+
+    return [
+      {
+        id: 'active-campaigns',
+        title: 'Active Campaigns',
+        value: activeCampaigns.length,
+        icon: TrendingUp,
+        color: 'text-green-600',
+        bgColor: 'bg-green-100',
+        available: true,
+        tooltip: 'Campaigns currently running'
+      },
+      {
+        id: 'budget',
+        title: 'Budget',
+        value: totalBudget,
+        icon: DollarSign,
+        color: 'text-blue-600',
+        bgColor: 'bg-blue-100',
+        available: true,
+        tooltip: 'Total budget across active campaigns'
+      },
+      {
+        id: 'influencers',
+        title: 'Influencers',
+        value: totalInfluencers,
+        icon: Users,
+        color: 'text-purple-600',
+        bgColor: 'bg-purple-100',
+        available: totalInfluencers > 0,
+        tooltip: totalInfluencers > 0 ? 'Unique influencers in active campaigns' : 'Connect influencers to see this metric'
+      },
+      {
+        id: 'deliverables',
+        title: 'Deliverables',
+        value: totalDeliverables,
+        icon: Building2,
+        color: 'text-indigo-600',
+        bgColor: 'bg-indigo-100',
+        available: true,
+        tooltip: 'Total deliverables across active campaigns'
+      }
+    ];
+  }, [campaigns]);
+
+  const handleCardClick = (cardId: string) => {
+    switch (cardId) {
+      case 'active-campaigns':
+        setFilterStatus('active');
+        break;
+      case 'budget':
+        // TODO: Navigate to budget/finance view when implemented
+        console.log('Budget view not yet implemented');
+        break;
+      case 'influencers':
+        // TODO: Navigate to influencers view when implemented
+        console.log('Influencers view not yet implemented');
+        break;
+      case 'deliverables':
+        // TODO: Navigate to deliverables view for active campaigns when implemented
+        console.log('Deliverables view not yet implemented');
+        break;
+    }
+  };
 
   const filteredCampaigns = campaigns
     .filter(campaign => {
@@ -109,62 +198,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-primary-100 rounded-lg">
-                <Folder className="h-6 w-6 text-primary-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Campaigns</p>
-                <p className="text-2xl font-bold text-gray-900">{campaigns.length}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">Active Campaigns</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {campaigns.filter(c => {
-                    const now = new Date();
-                    return c.startDate <= now && c.endDate >= now;
-                  }).length}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <DollarSign className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Budget</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrency(campaigns.reduce((sum, c) => sum + c.budgetAmount, 0))}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Users className="h-6 w-6 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Deliverables</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {campaigns.reduce((sum, c) => sum + c.deliverables.length, 0)}
-                </p>
-              </div>
-            </div>
-          </div>
+          {dashboardMetrics.map((metric) => (
+            <DashboardCard
+              key={metric.id}
+              metric={metric}
+              onClick={() => handleCardClick(metric.id)}
+            />
+          ))}
         </div>
 
         {/* Filters and Search */}
