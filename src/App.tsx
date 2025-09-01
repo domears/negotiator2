@@ -14,7 +14,7 @@ import { Campaign } from './types/campaign';
 import { sampleDeliverables } from './utils/mockData';
 
 function App() {
-  const [allCampaigns, setAllCampaigns] = useState<Campaign[]>([]);
+  const [allCampaigns, setAllCampaigns] = useState<Campaign[]>(sampleCampaigns);
   const [activeCampaignId, setActiveCampaignId] = useState<string | null>(null);
   const [isCreatingNewCampaign, setIsCreatingNewCampaign] = useState(false);
   const [isEditingActiveCampaign, setIsEditingActiveCampaign] = useState(false);
