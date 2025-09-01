@@ -187,8 +187,9 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
     { number: 1, title: 'Identification', icon: Building2 },
     { number: 2, title: 'Markets & Currency', icon: Globe },
     { number: 3, title: 'Objectives & KPIs', icon: Target },
-    { number: 4, title: 'Timing', icon: Clock },
-    { number: 5, title: 'Budget', icon: DollarSign },
+    { number: 4, title: 'Goals & Targets', icon: TrendingUp },
+    { number: 5, title: 'Timing', icon: Clock },
+    { number: 6, title: 'Budget', icon: DollarSign },
   ];
 
   return (
