@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { Plus, Search, Calendar, Users, Building2, Clock, Filter, ArrowRight, TrendingUp } from 'lucide-react';
+import { Plus, Search, Filter, Users, TrendingUp } from 'lucide-react';
 import { Campaign } from '../types/campaign';
-import { formatCurrency, calculateScenarioMetrics } from '../utils/calculations';
 import {
   useDashboardMetrics,
   useDashboardCards,
   type DashboardCard as DashboardCardType,
 } from '../hooks/useDashboardMetrics';
 import { DashboardCard as DashboardCardComponent } from './DashboardCard';
+import { CampaignCard } from './CampaignCard';
 
 interface DashboardProps {
   campaigns: Campaign[];
@@ -80,25 +80,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
       }
     });
 
-  const getStatusBadge = (campaign: Campaign) => {
-    const now = new Date();
-    const isActive = campaign.startDate <= now && campaign.endDate >= now;
-    const isCompleted = campaign.endDate < now;
-    const isUpcoming = campaign.startDate > now;
-    
-    if (isActive) {
-      return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Active</span>;
-    } else if (isCompleted) {
-      return <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">Completed</span>;
-    } else if (isUpcoming) {
-      return <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Upcoming</span>;
-    }
-    return <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Draft</span>;
-  };
-
-  const getCampaignMetrics = (campaign: Campaign) => {
-    return calculateScenarioMetrics(campaign.deliverables);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -220,96 +201,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
               )}
             </div>
           ) : (
-            filteredCampaigns.map((campaign) => {
-              const metrics = getCampaignMetrics(campaign);
-              return (
-                <div
-                  key={campaign.id}
-                  onClick={() => onSelectCampaign(campaign.id)}
-                  className="bg-white rounded-xl shadow-md border border-gray-100 p-6 hover:shadow-lg hover:border-primary-200 transition-all duration-200 cursor-pointer group"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors duration-200">
-                          {campaign.name}
-                        </h3>
-                        {getStatusBadge(campaign)}
-                      </div>
-                      
-                      <div className="flex items-center space-x-6 text-sm text-gray-600 mb-4">
-                        <div className="flex items-center space-x-1">
-                          <Building2 className="h-4 w-4" />
-                          <span>{campaign.client} • {campaign.brand}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>
-                            {campaign.startDate.toLocaleDateString()} - {campaign.endDate.toLocaleDateString()}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Clock className="h-4 w-4" />
-                          <span>{campaign.duration} days</span>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="bg-gray-50 rounded-lg p-3">
-                          <p className="text-xs text-gray-600 font-medium">Budget</p>
-                          <p className="text-sm font-bold text-gray-900">
-                            {formatCurrency(campaign.budgetAmount)}
-                          </p>
-                        </div>
-                        
-                        <div className="bg-gray-50 rounded-lg p-3">
-                          <p className="text-xs text-gray-600 font-medium">Planned Cost</p>
-                          <p className="text-sm font-bold text-gray-900">
-                            {formatCurrency(metrics.totalCost)}
-                          </p>
-                        </div>
-                        
-                        <div className="bg-gray-50 rounded-lg p-3">
-                          <p className="text-xs text-gray-600 font-medium">Deliverables</p>
-                          <p className="text-sm font-bold text-gray-900">
-                            {campaign.deliverables.length}
-                          </p>
-                        </div>
-                        
-                        <div className="bg-gray-50 rounded-lg p-3">
-                          <p className="text-xs text-gray-600 font-medium">Markets</p>
-                          <p className="text-sm font-bold text-gray-900">
-                            {campaign.markets.length}
-                          </p>
-                        </div>
-                      </div>
-
-                      {campaign.primaryKpis && campaign.primaryKpis.length > 0 && (
-                        <div className="mt-3">
-                          <p className="text-xs text-gray-600 font-medium mb-1">Primary KPIs:</p>
-                          <div className="flex flex-wrap gap-1">
-                            {campaign.primaryKpis.slice(0, 3).map((kpi) => (
-                              <span key={kpi} className="px-2 py-1 text-xs bg-primary-100 text-primary-800 rounded">
-                                {kpi}
-                              </span>
-                            ))}
-                            {campaign.primaryKpis.length > 3 && (
-                              <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded">
-                                +{campaign.primaryKpis.length - 3} more
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="flex items-center space-x-2 ml-4">
-                      <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-primary-600 transition-colors duration-200" />
-                    </div>
-                  </div>
-                </div>
-              );
-            })
+            filteredCampaigns.map((campaign) => (
+              <CampaignCard
+                key={campaign.id}
+                campaign={campaign}
+                onOpen={onSelectCampaign}
+              />
+            ))
           )}
         </div>
 
