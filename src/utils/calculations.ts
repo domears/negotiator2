@@ -1,4 +1,5 @@
-import { DeliverableRow, CalculationMetrics, AdminConfiguration, Rights } from '../types/campaign';
+import { DeliverableRow, CalculationMetrics, AdminConfiguration, Rights, Creator } from '../types/campaign';
+import { createMockDeliverable } from './mockData';
 
 // Mock admin configuration - in production this would come from API
 const adminConfig: AdminConfiguration = {
@@ -275,19 +276,25 @@ export const materializeCohort = (
   cohortRow: DeliverableRow,
   specificCreators: Creator[]
 ): DeliverableRow[] => {
-  return specificCreators.map((creator, index) => ({
-    ...cohortRow,
-    id: `${cohortRow.id}_materialized_${index}`,
-    creatorType: 'specific' as const,
-    creatorInfo: { ...creator, parentCohortId: cohortRow.id },
-    cohortSize: undefined,
-    quantity: cohortRow.quantity, // Each creator gets the same deliverable quantity
-    unitFee: creator.baseRate,
-    baseRate: creator.baseRate,
-    isMaterialized: true,
-    estimatedViews: Math.round(creator.followers * 0.1), // 10% reach estimate
-    estimatedEngagements: Math.round(creator.followers * creator.engagementRate / 100),
-  }));
+  return specificCreators.map((creator) => {
+    const baseProps: Partial<DeliverableRow> = { ...cohortRow };
+    delete baseProps.id;
+    delete baseProps.children;
+    return createMockDeliverable({
+      ...baseProps,
+      creatorType: 'specific',
+      creatorInfo: { ...creator, parentCohortId: cohortRow.id },
+      cohortSize: undefined,
+      quantity: cohortRow.quantity, // Each creator gets the same deliverable quantity
+      unitFee: creator.baseRate,
+      baseRate: creator.baseRate,
+      isMaterialized: true,
+      rights: { ...cohortRow.rights },
+      estimatedViews: Math.round(creator.followers * 0.1), // 10% reach estimate
+      estimatedEngagements: Math.round(creator.followers * creator.engagementRate / 100),
+      children: [],
+    });
+  });
 };
 
 export const formatCurrency = (amount: number): string => {
