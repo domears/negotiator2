@@ -4,13 +4,13 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { Dashboard } from './components/Dashboard';
 import { CampaignInitialization } from './components/CampaignInitialization';
 import { Navbar } from './components/Navbar';
-import DeliverableTable from './components/DeliverableTable';
+import DealCanvas from './components/DealCanvas';
 import { MediaSummary } from './components/MediaSummary';
 import { PriceTransparencyPanel } from './components/PriceTransparencyPanel';
 import { useMediaSummaryData } from './hooks/useMediaSummaryData';
 import { calculateScenarioMetrics, formatCurrency } from './utils/calculations';
 import { exportToCsv } from './utils/export';
-import { Campaign } from './types/campaign';
+import { Campaign, DeliverableRow, PlanningMode } from './types/campaign';
 import { sampleDeliverables, sampleCampaigns } from './utils/mockData';
 
 function App() {
@@ -50,8 +50,6 @@ function App() {
     selectedRowId,
     selectedRowIds,
     setPlanningMode,
-    updateDeliverable,
-    toggleExpanded,
     addDeliverable,
     addChildDeliverable,
     deleteDeliverable,
@@ -174,8 +172,6 @@ function App() {
             <div className="lg:col-span-2 space-y-6 min-h-0">
               <DealCanvas
                 deliverables={deliverables}
-                onUpdate={updateDeliverable}
-                onToggleExpanded={toggleExpanded}
                 onAddChild={addChildDeliverable}
                 onAddRow={addDeliverable}
                 onDeleteRow={deleteDeliverable}
