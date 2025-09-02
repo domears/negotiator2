@@ -148,7 +148,7 @@ export const CampaignInitialization: React.FC<CampaignInitializationProps> = ({
     setErrors(stepErrors);
     if (Object.keys(stepErrors).length === 0) {
       const completeCampaign: Campaign = {
-        id: existingCampaign?.id || Math.random().toString(36).substr(2, 9),
+        id: existingCampaign?.id || crypto.randomUUID(),
         name: campaign.name!,
         client: campaign.client!,
         brand: campaign.brand!,

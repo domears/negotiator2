@@ -129,7 +129,7 @@ export const deliverableBundles: DeliverableBundle[] = [
 ];
 
 export const createMockDeliverable = (overrides: Partial<DeliverableRow> = {}): DeliverableRow => ({
-  id: Math.random().toString(36).substr(2, 9),
+  id: crypto.randomUUID(),
   type: 'organic',
   platform: 'instagram',
   deliverableType: 'Post',
