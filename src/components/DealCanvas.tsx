@@ -6,8 +6,6 @@ import { BulkEditModal } from './BulkEditModal';
 
 interface DealCanvasProps {
   deliverables: DeliverableRow[];
-  onUpdate: (id: string, updates: Partial<DeliverableRow>) => void;
-  onToggleExpanded: (id: string) => void;
   onAddChild: (parentId: string) => void;
   onAddRow: () => void;
   onDeleteRow: (id: string) => void;
@@ -20,8 +18,6 @@ interface DealCanvasProps {
 
 const DealCanvas: React.FC<DealCanvasProps> = ({
   deliverables,
-  onUpdate,
-  onToggleExpanded,
   onAddChild,
   onAddRow,
   onDeleteRow,
@@ -32,11 +28,9 @@ const DealCanvas: React.FC<DealCanvasProps> = ({
   onMaterializeCohort,
 }) => {
   const [isBulkEditOpen, setIsBulkEditOpen] = React.useState(false);
-  const [editingDeliverableId, setEditingDeliverableId] = React.useState<string | null>(null);
   const hasSelection = selectedRowIds.length > 0;
 
   const handleEditDeliverable = (id: string) => {
-    setEditingDeliverableId(id);
     // TODO: Open inline editor or modal for editing deliverable details
     console.log('Edit deliverable:', id);
   };
