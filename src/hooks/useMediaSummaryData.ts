@@ -15,9 +15,12 @@ export const useMediaSummaryData = (
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
 
-  // Update internal state when props change
+  // Update internal state when props change, but avoid unnecessary resets
   React.useEffect(() => {
-    setDeliverables(initialDeliverables);
+    if (!shallowEqualDeliverables(initialDeliverables, deliverables)) {
+      setDeliverables(initialDeliverables);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialDeliverables]);
 
   React.useEffect(() => {
@@ -144,6 +147,27 @@ export const useMediaSummaryData = (
     materializeGenericCohort,
   };
 };
+
+function shallowEqualDeliverables(a: DeliverableRow[], b: DeliverableRow[]) {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+
+  for (let i = 0; i < a.length; i++) {
+    const rowA = a[i];
+    const rowB = b[i];
+    const keysA = Object.keys(rowA) as (keyof DeliverableRow)[];
+    const keysB = Object.keys(rowB) as (keyof DeliverableRow)[];
+    if (keysA.length !== keysB.length) return false;
+
+    for (const key of keysA) {
+      if (rowA[key] !== rowB[key]) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
 
 // Helper functions
 function getDeliverableById(deliverables: DeliverableRow[], id: string): DeliverableRow | null {
